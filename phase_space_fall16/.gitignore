@@ -1,0 +1,7 @@
+# ignore patterns
+
+*~
+# Objects and executable
+*.o
+*.d
+mc_hrs_single

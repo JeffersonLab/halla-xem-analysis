@@ -1,0 +1,36 @@
+!------------------------------------------------------------------------------
+! Input file for MC_HMS_SINGLE 					07/13/2005
+! EMC&x>1      Example input file
+! Cu and Au targets: Using Cu length and rad. length. Bot have same total
+! radiation length, so mult. scatt. should be the same.
+!------------------------------------------------------------------------------
+     5000000	Monte-Carlo trials
+     2950.0	Spectrometer momentum (in MeV/c)
+     22.00	Spectrometer angle (in degrees)
+    -15.0	M.C. DP/P  down limit 
+     15.0	M.C. DP/P  up   limit 
+    -50.0	M.C. Theta down limit (mr)
+     50.0	M.C. Theta down limit (mr)
+    -100.0	M.C. Phi   down limit (mr)
+     100.0	M.C. Phi   down limit (mr)
+     0.01	Horiz beam spot size in cm (Full width of +/- 1 sigma)
+     0.01	Vert  beam spot size in cm (Full width of +/- 1 sigma)
+     0.089	Thickness of target (Full width, cm)
+     0.1        Raster half-width x (cm)
+     0.1        Raster half-width y (cm)
+     50.0	DP/P  reconstruction cut (half width in % )
+     100.0	Theta reconstruction cut (half width in mr)
+     100.0	Phi   reconstruction cut (half width in mr)
+     50.0	ZTGT  reconstruction cut (Half width in cm)
+     1.43	one radiation length of target material (in cm)
+     0.11       Beam x offset (cm)  +x = beam left
+     0.0	Beam y offset (cm)  +y = up
+     0.13       Target z offset (cm)+z = downstream (0.25 - 0.07)
+     0.0        Spectrometer x offset (cm) +x = down
+     0.021      Spectrometer y offset (cm)
+     0.0        Spectrometer z offset (cm)
+     1.1        Spectrometer xp offset (mr)
+     0.0        Spectrometer yp offset (mr)
+     0		particle identification :e=0, p=1, d=2, pi=3, ka=4
+     1		flag for multiple scattering
+     1		flag for wire chamber smearing

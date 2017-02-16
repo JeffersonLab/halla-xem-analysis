@@ -1,0 +1,249 @@
+{------------------------------------------------------------------------------
+ HRS-SOS-RAYS.FOX
+
+ Visualize Trajectories through HRS Spectrometer.
+
+ Hall A HRS spectrometer.
+
+ Version: 0.0-dev
+ Author: Barak Schmookler, 21-Sep-2015
+
+ ------------------------------------------------------------------------------
+}
+INCLUDE 'COSY' ;
+PROCEDURE RUN ;
+
+{=========================== Variable Declarations ===========================}
+
+   VARIABLE L1 1 ;
+   VARIABLE L2 1 ;
+   VARIABLE L3 1 ;
+   VARIABLE DR1 1 ;
+   VARIABLE DR2 1 ;
+   VARIABLE DR3 1 ;
+   VARIABLE DRD 1 ;
+   VARIABLE Q1 1 ;        { quadrupole strength }
+   VARIABLE Q2 1 ;        { quadrupole strength }
+   VARIABLE Q3 1 ; VARIABLE DD3 1 ; { Q3 parameters }
+   VARIABLE USESOS 1 ;
+   VARIABLE RSOS 1 ;
+   VARIABLE LSOS 1 ;
+   VARIABLE RHQ1 1 ;
+   VARIABLE RHQ2 1 ;
+   VARIABLE RHQ3 1 ;  
+
+{dipole variables}
+
+   variable D_RADIUS 1 ;    { dipole bend radius }
+   variable D_BEND 1 ;      { dipole bend angle }
+   variable D_GAP 1 ;       { dipole half gap }
+   variable D_ALPHA 1 ;     { entrance shim angle }
+   variable D_BETA 1 ;      { exit shim angle }
+   variable D_INDEX 1 ;     { Field index }
+   variable D_N 1 5 ;       { field radial dependence coefficients }
+   variable DELTA_D_N 1 ;   { error on the field index }
+   variable D_S1 1 5 ;      { entrance polynomial coefficients }
+   variable D_S2 1 5 ;      { exit polynomial coefficients }
+   variable D_H1 1 ;        { dipole entrance curvature }
+   variable D_H2 1 ;        { dipole exit curvature }
+   variable D_S01 1 5 ;
+   variable D_S2 1 5 ;
+   variable D_S02 1 5 ;
+
+   VARIABLE OBJ 1 ;       { function used in evaluating first order focus }
+   VARIABLE FILE 80 ;     { filename }
+   VARIABLE LINE 80 ;     { dummy for user to answer into }
+   VARIABLE TILT 1 ;      { Focal plane tilt angle }
+   VARIABLE I 1 ;
+   VARIABLE J 1 ;
+   VARIABLE TMP 1 ;
+   VARIABLE SNAME 6 ;     {Spectrometer name}
+   VARIABLE FRMODE 1 ;    { Fringe field mode }
+   VARIABLE MORDER 1 ;    { Maximum order of maps }
+   VARIABLE FORDER 1 ;    { Order of forward maps }
+   VARIABLE RORDER 1 ;    { Order of reconstruction map }
+   VARIABLE RES 1 4 ;     { Resolution array }
+
+{========================== Procedure declarations ===========================}
+
+ { Ask user for input value }
+
+   PROCEDURE ASK VAR PROMPT LL UL ;
+      VARIABLE TMP 1 ;
+      VAR := 2*ABS(UL) + 1 ;
+      WHILE (VAR<LL)+(VAR>UL) ; WRITE 6 '$'&PROMPT ; READ 5 VAR ;
+      ENDWHILE ; ENDPROCEDURE ;
+
+{================================= Main Code =================================}
+
+{ Computation order specifications }
+
+   MORDER := 5 ;                        {Max order for calculations}
+   ASK FORDER 'Order for maps (1-'&SF(morder,'(i1)')&'): ' 1 morder ;
+
+   OV FORDER 3 0 ;                      {Order Value <order><phase dim><#par>}
+   CO FORDER ; RORDER := FORDER ;
+
+{ Beam specifications }
+
+   RPE 837.56 ;                          {REF PARTICLE <Momentum>}
+
+   SB .01 .030  0   .05 .020  0   0  .05  0   0  0 ;
+{  --> PX   PA  R12  PY   PB  R34 PT  PD  R56 PG PZ      }
+
+{ Spectrometer name }
+  
+   ASK USESOS 'Use the SOS quad instead of Q1 (0=no, 1=yes)' 0 1 ;
+   if USESOS#0 ; SNAME := 'HRSSOS' ; elseif TRUE ; SNAME := 'HRS' ; endif ;
+
+{ Fringe-field specifications.}
+
+   ASK frmode 'Fringe-field mode (0-3): ' 0 3 ; 
+   FR FRMODE ;
+
+{ From Dave Meekins HRS file }
+
+   FC 1 1 1 0.04725 2.2395 -0.9768 0.7288 -0.1299 0.0222 ;
+   FC 1 2 1 0.04725 2.2395 -0.9768 0.7288 -0.1299 0.0222 ;
+
+   LOOP I 2 6 ; LOOP J 1 2 ;
+      FC I J 1 0.1122 6.2671 -1.4982 3.5882 -2.1209 1.723 ;
+   ENDLOOP ; ENDLOOP ;
+
+{ Magnet geometry}
+
+   LSOS := 0.70   ;          {Magnetic length of SOS quad}
+   RSOS := 0.12827 ;         {Radius to pole tip of SOS quad}
+   RHQ1 := 0.15    ;         {Radius to pole tip of HRS Q1}
+   RHQ2 := 0.30    ;         {Radius to pole tip of HRS Q2}
+   RHQ3 := 0.30    ;         {Radius to pole tip of HRS Q3}
+   
+   L1 := 0.9413 ;            {Magnetic length of Q1}
+   L2 := 1.8266 ;            {Magnetic length of Q2}
+   L3 := 1.8268 ;            {Magnetic length of Q3}
+
+   DR1 := 1.5903 ;                  {Drift from target to Q1}
+   DR2 := 1.172  ;                  {Drift from Q1 to Q2}
+   DRD := 4.4308 ;                  {Drift from Q2 to dipole}
+   DR3 := 1.5925 ;                  {DRIFT FROM DIPOLE TO Q3}
+
+{ QUAD STRENGTHS }
+
+   Q1 := -0.243838 ;
+   Q2 :=  0.1934 ; 
+   Q3 :=  0.17892 ;
+   DD3 := 0. ; {Changed from 0.00245} 
+
+{ Recompute if using the SOS quad }
+
+   if USESOS#0 ;
+      DR1 := 1.711  ;                  {New drift from target to QSOS}
+      DR2 := 3.7036-LSOS-DR1  ;        {New drift from QSOS to Q2}
+      Q1 := Q1*RSOS/RHQ1 ;
+      Q1 := Q1*L1/LSOS ;
+
+   endif ;
+
+{ Dipole parameters }
+
+   D_RADIUS := 8.40 ; D_BEND := 45.0 ; D_GAP := 0.125 ;
+   D_ALPHA := -30.0 ; D_BETA := -30.0 ; D_INDEX := -1.25 ;
+   
+   D_N(1) := D_INDEX ;
+   loop i 2 5 ; d_n(i) := -d_n(i-1)*D_INDEX ; endloop ;
+
+   D_S1(1) := TAN(-30.*DEGRAD) ;   {Entrance pole shape}
+   D_S1(2) :=  0.4014526 ;
+   D_S1(3) :=  0.21710 ;
+   D_S1(4) := -0.0825 ;
+   D_S1(5) := -0.3110 ;
+   D_S2(1) := TAN(-30.*DEGRAD) ;   {Exit pole shape}
+   D_S2(2) := -0.4433318 ;
+   D_S2(3) :=  0.18020 ;
+   D_S2(4) := -0.2443 ;
+   D_S2(5) :=  1.1649 ;
+
+
+{ Begin composing forward maps }
+
+   FR FRMODE ;
+   UM ; {Initialize global map}
+
+   ER 1 3 3 3 1 3 1 1 ;
+   {PTY 10. ;}
+   BP ;
+
+{ FRONT QUADS }
+
+   DL DR1 ;                   {Drift to Q1 physical aperture}
+
+   if USESOS#0 ;
+
+     { Use SOS quad Enge fringe coefficients. }
+     LOOP I 2 6 ; LOOP J 1 2 ;
+     FC I J 1 0.2486 5.3626 -2.412  0.9874  0.0  0.0 ;
+     ENDLOOP ; ENDLOOP ;
+
+     write 6 'Using SOS quad instead of HRS Q1...' ;
+
+      MQ LSOS Q1 RSOS;
+
+     { Reset Enge fringe coefficients. }
+     LOOP I 2 6 ; LOOP J 1 2 ;
+     FC I J 1 0.1122 6.2671 -1.4982 3.5882 -2.1209 1.723 ;
+     ENDLOOP ; ENDLOOP ;
+
+   elseif TRUE ;
+
+     write 6 'Using Standard HRS Q1...' ;
+
+     MQ L1 Q1 RHQ1;
+
+   endif ;
+
+     write 6 'Drifting to Q2...' ;
+     
+     DL DR2 ;{Drift to Q2}
+     MQ L2 Q2 RHQ2;
+
+{ DIPOLE }
+
+      write 6 'Drifting to Dipole...' ;
+
+      DL DRD ;                        {Drift to dipole}
+
+      MC D_RADIUS D_BEND D_GAP D_N D_S1 D_S2 5 ;          {B1}
+
+
+{ REAR QUAD }
+
+      write 6 'Drifting to Q3...' ;
+
+      DL DR3 ;                   {Drift to Q3 physical aperture}
+      MQ L3 Q3 RHQ3;
+
+{ Reconstruction plane }
+
+      write 6 'Drifting to Detector Plane...' ;
+
+      DL 3.4523 ;      {Drift to detector plane}
+
+      PS 0.3 ;         {Mark 1st order focal plane}
+      DL 5.0 ;         {Extend rays for picture}
+      PS 0.3 ;
+      EP ;             {End Picture}
+      DL -5.0 ;        {Drift back to focal plane (not really necessary...)}
+      PG -101 -102 ;   {Output to graphics device}
+      PG -111 -111;    {Save Pictures}
+
+ENDPROCEDURE ;
+RUN ;
+END ;
+
+
+
+
+
+
+
+

@@ -1,0 +1,37 @@
+!------------------------------------------------------------------------------
+! Input file for MC_HRS_SINGLE 					01/31/2015
+!------------------------------------------------------------------------------
+     1000000	Monte-Carlo trials
+     1000.0	Spectrometer momentum (in MeV/c)
+     48.8	Spectrometer angle (in degrees)
+    -10.0	M.C. DP/P  down limit 
+     10.0	M.C. DP/P  up   limit 
+    -100.0	M.C. Theta down limit (mr)
+     100.0	M.C. Theta up   limit (mr)
+    -100.0	M.C. Phi   down limit (mr)
+     100.0	M.C. Phi   up   limit (mr)
+     0.0	Horiz beam spot size in cm (Full width of +/- 1 sigma)
+     0.0	Vert  beam spot size in cm (Full width of +/- 1 sigma)
+     0.0	Thickness of target (Full width, cm)
+     0.0        Raster half-width x (cm)
+     0.0        Raster half-width y (cm)
+     50.0	DP/P  reconstruction cut (half width in % )
+     100.0	Theta reconstruction cut (half width in mr)
+     100.0	Phi   reconstruction cut (half width in mr)
+     50.0	ZTGT  reconstruction cut (Half width in cm)
+     0.0  	one radiation length of target material (in cm)
+     0.0        Beam x offset (cm)  +x = beam left
+     0.0	Beam y offset (cm)  +y = up
+    -7.50        Target z offset (cm)+z = downstream
+     0.0        Spectrometer x offset (cm) +x = down
+     0.0        Spectrometer y offset (cm)
+     0.0       Spectrometer z offset (cm)
+     0.0        Spectrometer xp offset (mr)
+     0.0        Spectrometer yp offset (mr)
+     0		particle identification :e=0, p=1, d=2, pi=3, ka=4
+     0		flag for multiple scattering
+     1		flag for wire chamber smearing
+     0          flag for dumping all events into NTUPLE
+     4          collimator option: 0=Wide Open, 1=Collimator, 2=Sieve, 3=EXT Sieve, 4=GMP Sieve
+     1		flag for using state file for random number generation
+
