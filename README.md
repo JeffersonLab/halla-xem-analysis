@@ -1,6 +1,7 @@
 # halla-xem-analysis
 
 This is the single-arm version of SIMC for the HRS Spectrometers.
+Author: Barak Schmookler
 
 Contents
 --------
