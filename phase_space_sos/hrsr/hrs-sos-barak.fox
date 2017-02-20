@@ -22,6 +22,8 @@
  conversations with D. Potterveld and M. Jones).
  21-Sep-2015, Barak Schmookler: Implemented option from using SOS Quad in place
  of Q1. Set correct fringe field parameters for the SOS Quad.
+ 30-Nov-2015, Barak Schmookler: Added a '!' before each header element, as
+ required by SIMC. Only took me 3 months to think to do this...
 
  ------------------------------------------------------------------------------
 }
@@ -143,10 +145,10 @@ PROCEDURE RUN ;
  { Output forward transformation data at an aperture and update internal maps }
 
    PROCEDURE APERTURE LABEL REGION ;
-      WRITE 20 'NAME: '&LABEL ;
-      WRITE 20 'REGION: '&REGION ;
-      WRITE 20 'OFFSET: '&SF(TMPSPOS,'(F25.16)')&' (in meters)' ;
-      WRITE 20 'LENGTH: '&SF(SPOS,'(F25.16)')&' (canonical length in meters)' ;
+      WRITE 20 '!NAME: '&LABEL ;
+      WRITE 20 '!REGION: '&REGION ;
+      WRITE 20 '!OFFSET: '&SF(TMPSPOS,'(F25.16)')&' (in meters)' ;
+      WRITE 20 '!LENGTH: '&SF(SPOS,'(F25.16)')&' (canonical length in meters)' ;
       PT 20 ;                           {Output data}
       TMPSPOS := TMPSPOS + SPOS ;
       ANM MAP GMAP GMAP ; UM ;          {Update global map + reset}
@@ -329,13 +331,13 @@ PROCEDURE RUN ;
       APERTURE 'DIPOLE_ENTRANCE' 'FULL' ;
 
 { Consistency check: we better be at the right Z! }
-
 {
       IF ABS(TMPSPOS-ZDI)>1E-9 ;
         WRITE 6 'Warning: Dipole location is bad:' ;
         WRITE 6 'POSITION = '&S(TMPSPOS)&', but should be '&S(ZDI) ;
       ENDIF ;
 }
+
       MC D_RADIUS D_BEND D_GAP D_N D_S1 D_S2 5 ;          {B1}
 
       APERTURE 'DIPOLE_EXIT' 'FULL' ;

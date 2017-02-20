@@ -86,8 +86,8 @@ C Collimator (rectangle) dimensions and offsets.
 
 ! z-position of important apertures.
 !	real*8 z_entr,z_exit
-!	parameter (z_entr = 110.9d0 + z_off)	!nominally 1.109 m
-!	parameter (z_exit = z_entr + 8.0d0)	!8.0 cm thick
+!	parameter (z_entr = 110.9e0 + z_off)	!nominally 1.109 m
+!	parameter (z_exit = z_entr + 8.0e0)	!8.0 cm thick
 
 C Local declarations.
 
@@ -401,7 +401,7 @@ C Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
 
 ! Check aperture at 2/3 of Q1 (SOS Quad).
 
-	call transp(spectr,2,decay_flag,dflag,m2,p,46.66666667d0,pathlen)
+	call transp(spectr,2,decay_flag,dflag,m2,p,46.66666667e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q1*r_Q1) then
 	  lSTOP_Q1_mid = lSTOP_Q1_mid + 1
 	  stop_where=6.
@@ -412,7 +412,7 @@ C Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
 
 ! Go to Q1 (SOS Quad) OUT mag boundary.
 
-	call transp(spectr,3,decay_flag,dflag,m2,p,23.33333333d0,pathlen)
+	call transp(spectr,3,decay_flag,dflag,m2,p,23.33333333e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q1*r_Q1) then
 	  lSTOP_Q1_out = lSTOP_Q1_out + 1
 	  stop_where=7.
@@ -460,7 +460,7 @@ C Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
 
 ! Check aperture at 2/3 of Q2.
 
-	call transp(spectr,5,decay_flag,dflag,m2,p,121.77333333d0,pathlen)
+	call transp(spectr,5,decay_flag,dflag,m2,p,121.77333333e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q2*r_Q2) then
 	  lSTOP_Q2_mid = lSTOP_Q2_mid + 1
 	  stop_where=11.
@@ -471,7 +471,7 @@ C Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
 
 ! Go to Q2 OUT mag boundary.
 
-	call transp(spectr,6,decay_flag,dflag,m2,p,60.88666667d0,pathlen)
+	call transp(spectr,6,decay_flag,dflag,m2,p,60.88666667e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q2*r_Q2) then
 	  lSTOP_Q2_out = lSTOP_Q2_out + 1
 	  stop_where=12.
@@ -541,7 +541,7 @@ C Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
 ! Go to D1 OUT magnetic boundary.
 ! Find intersection with rotated aperture plane.
 
-	call transp(spectr,8,decay_flag,dflag,m2,p,659.73445725d0,pathlen)
+	call transp(spectr,8,decay_flag,dflag,m2,p,659.73445725e0,pathlen)
 	xt=xs
 	yt=ys
 	call rotate_haxis(30.0,xt,yt)
@@ -608,7 +608,7 @@ C Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
 
 ! Check aperture at 2/3 of Q3.
 
-	call transp(spectr,10,decay_flag,dflag,m2,p,121.7866667d0,pathlen)
+	call transp(spectr,10,decay_flag,dflag,m2,p,121.7866667e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q3*r_Q3) then
 	  lSTOP_Q3_mid = lSTOP_Q3_mid + 1
 	  stop_where=21.
@@ -619,7 +619,7 @@ C Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
 
 ! Go to Q3 OUT mag boundary.
 
-	call transp(spectr,11,decay_flag,dflag,m2,p,60.89333333d0,pathlen)
+	call transp(spectr,11,decay_flag,dflag,m2,p,60.89333333e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q3*r_Q3) then
 	  lSTOP_Q3_out = lSTOP_Q3_out + 1
 	  stop_where=22.
@@ -650,7 +650,7 @@ C Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
 
 	xt=xs
         yt=ys
-        call rotate_haxis(45.0d0,xt,yt)
+        call rotate_haxis(45.0e0,xt,yt)
 
 	if (abs(xt).gt.99.76635 .or. abs(yt).gt.17.145) then
 	  lSTOP_Q3_out = lSTOP_Q3_out + 1

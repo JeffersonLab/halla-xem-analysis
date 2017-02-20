@@ -175,7 +175,6 @@ C Calorimeter position
 
 	real*8 hcal_1pr_zpos,hcal_2ta_zpos,hcal_3ta_zpos,hcal_4ta_zpos
 	real*8 hcal_left,hcal_right,hcal_top,hcal_bottom
-	integer*4 hcal_nx,hcal_ny           !number of cal blocks in each direction 
 	parameter (hcal_1pr_zpos = 302.3 + 25.0)
 	parameter (hcal_2ta_zpos = 337.3 + 25.0)
 	parameter (hcal_3ta_zpos = 372.3 + 25.0)
@@ -184,8 +183,6 @@ C Calorimeter position
 	parameter (hcal_right    = -7.5)
 	parameter (hcal_top      = -7.5)
 	parameter (hcal_bottom   =  7.5)
-	parameter (hcal_nx = 16)
-	parameter (hcal_ny = 5)
 
 C The arguments
 
@@ -211,7 +208,7 @@ C Local declarations.
 	real*8	radw,drift
 
 	real*8 nsig_max
-	parameter(nsig_max=99.0d0)	!max #/sigma for gaussian ran #s.
+	parameter(nsig_max=99.0e0)	!max #/sigma for gaussian ran #s.
 
 C These have to be real*4 for the CERNLIB lfit routine
 
@@ -293,7 +290,7 @@ C instead of 1/2 way through.
 !rotate 45 degrees to compare to VDCs.  CHECK SIGN AND SIZE OF ROTATAION!!!
 	xt=xs
 	yt=ys
-	call rotate_haxis(45.0d0,xt,yt)
+	call rotate_haxis(45.0e0,xt,yt)
 
 	if (xt.gt.(hdc_1_bot-hdc_1x_offset) .or.
      >      xt.lt.(hdc_1_top-hdc_1x_offset) .or.
@@ -356,7 +353,7 @@ C at last cathode foil of first drift chamber set, drift to next
 !rotate 45 degrees to compare to VDCs.  CHECK SIGN AND SIZE OF ROTATAION!!!
         xt=xs
         yt=ys
-        call rotate_haxis(45.0d0,xt,yt)
+        call rotate_haxis(45.0e0,xt,yt)
 
 	if (xt.gt.(hdc_2_bot-hdc_2x_offset) .or.
      >      xt.lt.(hdc_2_top-hdc_2x_offset) .or.
@@ -481,16 +478,14 @@ C The standard fiducial cut is 5 cm from the edges of the block.
 
 	xcal = x_fp + dx_fp * hcal_4ta_zpos
 	ycal = y_fp + dy_fp * hcal_4ta_zpos
-	if (ycal.gt.( (hcal_ny*hcal_left)-5.0 )   .or. 
-     >      ycal.lt.( (hcal_ny*hcal_right)+5.0 )  .or.
-     >	    xcal.gt.( (hcal_nx*hcal_bottom)-5.0 ) .or. 
-     >      xcal.lt.( (hcal_nx*hcal_top)+5.0 )) then
-	  rSTOP_cal = rSTOP_cal + 1
-	  stop_where=23.
-	  x_stop=xs
-	  y_stop=ys
-	  goto 500
-	endif
+*	if (ycal.gt.(hcal_left-5.0) .or. ycal.lt.(hcal_right+5.0) .or.
+*     >	   xcal.gt.(hcal_bottom-5.0) .or. xcal.lt.(hcal_top+5.0)) then
+*	  rSTOP_cal = rSTOP_cal + 1
+*	  stop_where=23.
+*	  x_stop=xs
+*	  y_stop=ys
+*	  goto 500
+*	endif
 
 	ok_hut = .true.
 

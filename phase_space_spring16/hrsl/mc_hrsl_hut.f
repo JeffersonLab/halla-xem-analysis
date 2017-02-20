@@ -319,7 +319,7 @@ C Local declarations.
 	real*8	radw,drift
 
 	real*8 nsig_max
-	parameter(nsig_max=99.0d0)	!max #/sigma for gaussian ran #s.
+	parameter(nsig_max=99.0e0)	!max #/sigma for gaussian ran #s.
 
 C These have to be real*4 for the CERNLIB lfit routine
 
@@ -413,7 +413,7 @@ C First Chamber
 	!rotate 45 degrees to compare to VDCs.  CHECK SIGN AND SIZE OF ROTATAION!!!
 	xt=xs
 	yt=ys
-	call rotate_haxis(45.0d0,xt,yt)
+	call rotate_haxis(45.0e0,xt,yt)
 
 	if (xt.gt.(hdc_1_bot+hdc_1x_offset) .or.
      >      xt.lt.(hdc_1_top+hdc_1x_offset) .or.
@@ -487,7 +487,7 @@ C Second Chamber
 	!rotate 45 degrees to compare to VDCs. CHECK SIGN AND SIZE OF ROTATAION!!!
         xt=xs
         yt=ys
-        call rotate_haxis(45.0d0,xt,yt)
+        call rotate_haxis(45.0e0,xt,yt)
 
 	if (xt.gt.(hdc_2_bot+hdc_2x_offset) .or.
      >      xt.lt.(hdc_2_top+hdc_2x_offset) .or.

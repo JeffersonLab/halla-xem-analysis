@@ -88,8 +88,8 @@ C Collimator (rectangle) dimensions and offsets.
 
 ! z-position of important apertures.
 	real*8 z_entr,z_exit
-	parameter (z_entr = 110.0d0 + z_off)	!nominally 1.100 m
-	parameter (z_exit = z_entr + 8.0d0)	!8.0 cm thick
+	parameter (z_entr = 110.0e0 + z_off)	!nominally 1.100 m
+	parameter (z_exit = z_entr + 8.0e0)	!8.0 cm thick
 
 
 C Local declarations.
@@ -145,7 +145,7 @@ C ================================ Executable Code =============================
               use_gmp_sieve = .true.
            endif
 
-	   
+
 	   ! No collimator - wide open
 	   if (use_open .or. use_sieve .or. use_ext_sieve .or. use_gmp_sieve) then
 	      h_entr = 99.
@@ -185,12 +185,12 @@ C ================================ Executable Code =============================
            yt = 1.25*nint(yt/1.25)
 
 	   if( (abs(xt) < 0.01 .and. abs(yt) < 0.01) .or. (abs(xt+5.00) < 0.01 .and. abs(yt-1.25) < 0.01) ) then
-	      rt = 0.3*sqrt(grnd()) !distance from center of hole(r=3.0mm)
-	   else
-	      rt = 0.2*sqrt(grnd()) !distance from center of hole(r=2.0mm)
-	   endif
+              rt = 0.3*sqrt(grnd()) !distance from center of hole(r=3.0mm)
+           else
+              rt = 0.2*sqrt(grnd()) !distance from center of hole(r=2.0mm)
+           endif
 
-	   tht= 2*pi*grnd()	!angle of offset.
+           tht= 2*pi*grnd()     !angle of offset.
            
            xt = xt + (rt * cos(tht))    !actually use distance/angle offset
            yt = yt + (rt * sin(tht))
@@ -200,31 +200,32 @@ C ================================ Executable Code =============================
         endif
 
 
-	if (use_gmp_sieve) then
-	   xt = x + z_exit * dxdz       !project to collimator
-	   yt = y + z_exit * dydz
-	   
-	   yt = 0.625*nint(yt/0.625)    !shift to nearest horizontal hole
-	   if(mod(abs(yt),1.25) < 0.01) then
-	      xt = 2.50*nint(xt/2.50)
-	   else
-	      xt = 2.50*nint(xt/2.50) + 1.25
-	   endif
+        if (use_gmp_sieve) then
+           xt = x + z_exit * dxdz       !project to collimator
+           yt = y + z_exit * dydz
+           
+           yt = 0.625*nint(yt/0.625)    !shift to nearest horizontal hole
+           if(mod(abs(yt),1.25) < 0.01) then
+              xt = 2.50*nint(xt/2.50)
+           else
+              xt = 2.50*nint(xt/2.50) + 1.25
+           endif
 
 	   if( (abs(xt) < 0.01 .and. abs(yt) < 0.01) .or. (abs(xt+5.00) < 0.01 .and. abs(yt-1.25) < 0.01) ) then
-	      rt = 0.3*sqrt(grnd()) !distance from center of hole(r=3.0mm)
-	   else
-	      rt = 0.2*sqrt(grnd()) !distance from center of hole(r=2.0mm)
-	   endif
+              rt = 0.3*sqrt(grnd()) !distance from center of hole(r=3.0mm)
+           else
+              rt = 0.2*sqrt(grnd()) !distance from center of hole(r=2.0mm)
+           endif
 
-	   tht= 2*pi*grnd()	!angle of offset.
-	   
-	   xt = xt + (rt * cos(tht))    !actually use distance/angle offset
-	   yt = yt + (rt * sin(tht))
+           tht= 2*pi*grnd()     !angle of offset.
+           
+           xt = xt + (rt * cos(tht))    !actually use distance/angle offset
+           yt = yt + (rt * sin(tht))
 
-	   dxdz = (xt-x)/z_exit	        !force to correct angle.
-	   dydz = (yt-y)/z_exit
-	endif
+           dxdz = (xt-x)/z_exit         !force to correct angle.
+           dydz = (yt-y)/z_exit
+        endif
+
 
 ! Save spectrometer coordinates.
 
@@ -316,7 +317,6 @@ C Read in transport coefficients.
 ! Aperture before Q1 (can only check this if next transformation is DRIFT).
 
 	ztmp = 135.064
-	!ztmp = 120.865
 	zdrift = ztmp - z_exit
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.12.5222) then
@@ -342,7 +342,7 @@ C Read in transport coefficients.
 
 ! Check aperture at 2/3 of Q1.
 
-	call transp(spectr,2,decay_flag,dflag,m2,p,46.66666667d0,pathlen)
+	call transp(spectr,2,decay_flag,dflag,m2,p,46.66666667e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q1*r_Q1) then
 	  rSTOP_Q1_mid = rSTOP_Q1_mid + 1
 	  stop_where=6.
@@ -353,7 +353,7 @@ C Read in transport coefficients.
 
 ! Go to Q1 OUT mag boundary.
 
-	call transp(spectr,3,decay_flag,dflag,m2,p,23.33333333d0,pathlen)
+	call transp(spectr,3,decay_flag,dflag,m2,p,23.33333333e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q1*r_Q1) then
 	  rSTOP_Q1_out = rSTOP_Q1_out + 1
 	  stop_where=7.
@@ -365,7 +365,6 @@ C Read in transport coefficients.
 ! Apertures after Q1, before Q2 (can only check this if next trans. is DRIFT).
 
 	zdrift = 300.464 - 241.095		!SOS Quad exit is z=241.095
-	!zdrift = 300.464 - 211.095		!SOS Quad exit is z=211.095
 	ztmp = zdrift				!distance from Q1 exit
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.14.9225) then
@@ -402,7 +401,7 @@ C Read in transport coefficients.
 
 ! Check aperture at 2/3 of Q2.
 
-	call transp(spectr,5,decay_flag,dflag,m2,p,121.77333333d0,pathlen)
+	call transp(spectr,5,decay_flag,dflag,m2,p,121.77333333e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q2*r_Q2) then
 	  rSTOP_Q2_mid = rSTOP_Q2_mid + 1
 	  stop_where=9.
@@ -413,7 +412,7 @@ C Read in transport coefficients.
 
 ! Go to Q2 OUT mag boundary.
 
-	call transp(spectr,6,decay_flag,dflag,m2,p,60.88666667d0,pathlen)
+	call transp(spectr,6,decay_flag,dflag,m2,p,60.88666667e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q2*r_Q2) then
 	  rSTOP_Q2_out = rSTOP_Q2_out + 1
 	  stop_where=10.
@@ -483,7 +482,7 @@ C Read in transport coefficients.
 ! Go to D1 OUT magnetic boundary.
 ! Find intersection with rotated aperture plane.
 
-	call transp(spectr,8,decay_flag,dflag,m2,p,659.73445725d0,pathlen)
+	call transp(spectr,8,decay_flag,dflag,m2,p,659.73445725e0,pathlen)
 	xt=xs
 	yt=ys
 	call rotate_haxis(30.0,xt,yt)
@@ -550,7 +549,7 @@ C Read in transport coefficients.
 
 ! Check aperture at 2/3 of Q3.
 
-	call transp(spectr,10,decay_flag,dflag,m2,p,121.7866667d0,pathlen)
+	call transp(spectr,10,decay_flag,dflag,m2,p,121.7866667e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q3*r_Q3) then
 	  rSTOP_Q3_mid = rSTOP_Q3_mid + 1
 	  stop_where=16.
@@ -561,7 +560,7 @@ C Read in transport coefficients.
 
 ! Go to Q3 OUT mag boundary.
 
-	call transp(spectr,11,decay_flag,dflag,m2,p,60.89333333d0,pathlen)
+	call transp(spectr,11,decay_flag,dflag,m2,p,60.89333333e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q3*r_Q3) then
 	  rSTOP_Q3_out = rSTOP_Q3_out + 1
 	  stop_where=17.

@@ -36,8 +36,8 @@ sub_objs = $(SPEC)mc_hrsr.o $(SPEC)mc_hrsr_hut.o $(SPEC)mc_hrsr_recon_sub.o \
 MYOS := $(subst -,,$(shell uname))
 #mess $(MYOS)
 
-CERNLIBS = -lgeant$(GEANTVER) -lpawlib -lgraflib -lgrafX11 -lpacklib -lmathlib
-
+#CERNLIBS = -lgeant$(GEANTVER) -lpawlib -lgraflib -lgrafX11 -lpacklib -lmathlib
+CERNLIBS = -Wl,-static -lgeant$(GEANTVER) -lpawlib -lgraflib -lgrafX11 -lpacklib -lkernlib -lmathlib -Wl,-dy
 ifeq ($(MYOS),HPUX)
   ifneq (,$(findstring 09,$(shell uname -r)))
     HPUXVERSION := 09
@@ -54,8 +54,8 @@ ifeq ($(MYOS),HPUX)
   FFLAGS=+U77 +ppu -C +e +es +FPVZOU -O +Onolimit -R8
   LDFLAGS=-Wl,-a archive
   OTHERLIBS = \
-	-Wl,-L$(CERN_ROOT)/lib -lpacklib $(CERNLIBS) \
-	-Wl,-L/usr/lib/X11R5 -lX11 -lm
+	-L$(CERN_ROOT)/lib $(CERNLIBS) \
+	-L/usr/lib/X11R5 -lX11 -lm
 endif
 
 #For use with gfortran compiler
