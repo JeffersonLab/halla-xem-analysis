@@ -15,7 +15,7 @@ C+______________________________________________________________________________
 !  11-Aug-1993	(D. Potterveld) Modified to use new transformation scheme in
 !		which each transformation begins at the pivot.
 !
-!  19-AUG-1993  (D. Potterveld) Modified to use COSY INFINITY transformations.
+!  19-AUG-1993  (D. Potterveld) Modified to use COSY INFINITY transformations. 
 C-______________________________________________________________________________
 
 	implicit none
@@ -31,12 +31,15 @@ C HBOOK/NTUPLE common block and parameters.
 	parameter	(pawc_size = 80000)
 	common		/pawc/ hbdata(pawc_size)
 	integer*4	hbdata
-	character*8	hut_nt_names(18)/
+	character*8	hut_nt_names(28)/
      >			'hsxfp', 'hsyfp', 'hsxpfp', 'hsypfp',
      >			'hsytari', 'hsdeltai', 'hsyptari', 'hsxptari',
      >			'hsytar', 'hsdelta', 'hsyptar', 'hsxptar','fry',
-     >                  'frx', 'ok_spec', 'stopwhen', 'x_stop','y_stop'/
-	real*4		hut(18)
+     >                  'frx', 'ok_spec', 'stopwhen', 'x_stop','y_stop',
+     >                  'z_init','z_recon','th_init','th_recon',
+     >                  'p_init','e_init','p_recon','e_recon',
+     >                  'elossi','elossf'/
+	real*4		hut(28)
 
 C Local declarations.
 	integer*4	i,
@@ -59,8 +62,12 @@ C Event limits, topdrawer limits, physics quantities
 	real*8 spec_xpoff, spec_ypoff           !Spectrometer angle offsets
 	real*8 cos_ts,sin_ts			!cos and sin of spectrometer angle
 	real*8 th_ev,cos_ev,sin_ev		!cos and sin of event angle
+	real*8 theta_rec,cos_rec,sin_rec        !cos and sin of reconstructed angle
 	real*8 x,y,z,dpp,dxdz,dydz,t1,t2,t3,t4	!temporaries
 	real*8 musc_targ_len			!target length for multiple scattering
+	real*8 targ_rho                         !target density in g/cm^3 
+	real*8 targ_Z,targ_A                    !target Z,A
+	real*8 mass                             !particle mass  
 	real*8 m2				!particle mass squared.
 	real*8 rad_len_cm			!conversion r.l. to cm for target
 	real*8 pathlen				!path length through spectrometer.
@@ -68,11 +75,18 @@ C DJG Variables used for target calcs
 	real*8 t,atmp,btmp,ctmp,z_can
 	real*8 side_path,costmp,th_can,s_Al
 	real*8 forward_path,s_target
+	real*8 s_air, s_mylar
 
 C Miscellaneous
 	logical*4 ok_spec			!indicates whether event makes it in MC
 c	logical*4 dump_all_in_ntuple            !indicates whether to write out all events
 c	integer*4 hit_calo                      !flag for hitting the calorimeter
+	real*8 momentumi,momentums,momentumf    !particle momentum (vertex,spectrometer,reconstructed at spec.)
+	real*8 energyi,energys,energyf          !particle energy (vertex,spectrometer,reconstructed at spec.)
+	integer*4 typeflag	                !1=generate eloss, 2=min, 3=max, 4=most probable
+	real*8 Elossi,Elossf                    !energy loss (real,reconstructed)
+	real*8 Eloss_target,Eloss_Al,Eloss_air,Eloss_mylar !temporary elosses
+	real*8 y_coff,x_beam,arg1,aa1,aa2 !used when reconstructing z vertex
 
 C Initial and reconstructed track quantities.
 	real*8 dpp_init,dth_init,dph_init,xtar_init,ytar_init,ztar_init
@@ -86,6 +100,7 @@ C Initial and reconstructed track quantities.
 C Control flags (from input file)
 	integer*4 p_flag			!particle identification
 	logical*4 ms_flag
+	logical*4 eloss_flag
 	logical*4 wcs_flag
 	integer*4 col_flag
 	logical*4 gen_evts_file_flag
@@ -185,8 +200,7 @@ C Initialize HBOOK/NTUPLE if used.
 !	  call hropen(30,'HUT',filename,'N',1024,i)
 	  iquest(10) = 256000
 	  iquest(10) = 510000
-! see for example
-!   http://wwwasd.web.cern.ch/wwwasd/cgi-bin/listpawfaqs.pl/7
+! see for example http://wwwasd.web.cern.ch/wwwasd/cgi-bin/listpawfaqs.pl/7
 ! the file size is limited to ~260M no matter how I change iquest !
 	  call hropen(30,'HUT',filename,'NQ',4096,i) !CERNLIB
  
@@ -194,7 +208,7 @@ C Initialize HBOOK/NTUPLE if used.
 	    write(6,*),'HROPEN error: istat = ',i
 	    stop
 	  endif
-	  call hbookn(1,'HUT NTUPLE',18,'HUT',10000,hut_nt_names)
+	  call hbookn(1,'HUT NTUPLE',28,'HUT',10000,hut_nt_names)
 	endif	   
 
 C Open Output file.
@@ -290,6 +304,21 @@ c	read (chanin,1001) str_line
 	write(6,*) str_line(1:last_char(str_line))
 	if (.not.rd_real(str_line,rad_len_cm)) stop 'ERROR (RAD_LEN_CM) in setup!'
 
+! Read in density of target in g/cm^3
+	read (chanin,1001) str_line
+	write(6,*) str_line(1:last_char(str_line))
+	if (.not.rd_real(str_line,targ_rho)) stop 'ERROR (TARG_RHO) in setup!'
+
+! Read in target atomic number (Z)
+	read (chanin,1001) str_line
+	write(6,*) str_line(1:last_char(str_line))
+	if (.not.rd_real(str_line,targ_Z)) stop 'ERROR (TARG_Z) in setup!'
+
+! Read in target standard atomic weight (A)
+	read (chanin,1001) str_line
+	write(6,*) str_line(1:last_char(str_line))
+	if (.not.rd_real(str_line,targ_A)) stop 'ERROR (TARG_A) in setup!'
+
 ! Beam and target offsets
 	read (chanin, 1001) str_line
 	write(6,*) str_line(1:last_char(str_line))
@@ -337,17 +366,17 @@ c	read (chanin,1001) str_line
 	write(6,*) str_line(1:last_char(str_line))
 	if (.not.rd_int(str_line,p_flag)) stop 'ERROR: p_flag in setup file!'
 
-! Read in flag for aerogel usage in the HMS.
-!	read (chanin,1001) str_line
-!	write(6,*) str_line(1:last_char(str_line))
-!	if (.not.rd_int(str_line,tmp_int)) stop 'ERROR: use_aer in setup file!'
-!	if (tmp_int.eq.1) use_aer = .true.
-
 ! Read in flag for multiple scattering.
 	read (chanin,1001) str_line
 	write(6,*) str_line(1:last_char(str_line))
 	if (.not.rd_int(str_line,tmp_int)) stop 'ERROR: ms_flag in setup file!'
 	if (tmp_int.eq.1) ms_flag = .true.
+
+! Read in flag for ionization energy loss.
+	read (chanin,1001) str_line
+	write(6,*) str_line(1:last_char(str_line))
+	if (.not.rd_int(str_line,tmp_int)) stop 'ERROR: eloss_flag in setup file!'
+	if (tmp_int.eq.1) eloss_flag = .true.
 
 ! Read in flag for wire chamber smearing.
 	read (chanin,1001) str_line
@@ -356,8 +385,8 @@ c	read (chanin,1001) str_line
 	if (tmp_int.eq.1) wcs_flag = .true.
 
 ! Read in flag for dumping ALL events into the HUT NTUPLE (note that
-! the ...recon quantities will be ill defined but the FAIL_ID could be
-! used to tell...
+! the recon quantities will be ill defined but the FAIL_ID can be
+! used to tell...)
 	read (chanin,1001) str_line
 	write(6,*) str_line(1:last_char(str_line))
 	if (.not.rd_int(str_line,tmp_int)) stop 'ERROR:dump_all_in_ntuple in setup file!'
@@ -386,17 +415,23 @@ c	read (chanin,1001) str_line
 	if (tmp_int.eq.1) use_left_arm = .true.
 
 C Set particle masses.
-	m2 = me2			!default to electron
+	mass = Me		!default to electron
+	m2 = Me2
 	if(p_flag.eq.0) then
-	  m2 = me2
+	   mass = Me
+	   m2 = Me2
 	else if(p_flag.eq.1) then
-	  m2 = mp2
+	   mass = Mp
+	   m2 = Mp2
 	else if(p_flag.eq.2) then
-	  m2 = md2
+	   mass = Md
+	   m2 = Md2
 	else if(p_flag.eq.3) then
-	  m2 = mpi2
+	   mass = Mpi
+	   m2 = Mpi2
 	else if(p_flag.eq.4) then
-	  m2 = mk2
+	   mass = Mk
+	   m2 = Mk2
 	endif
 
 C Initialize the random number generator
@@ -422,8 +457,12 @@ C Print out which arm we will be using
 	   write(6,*) 'Will be Running Events through RIGHT HRS!'
 	endif
 
-C Open file to check generated distributions
-c	open(unit = 3, file = "data.dat")
+C Print out energy loss setting
+	if(eloss_flag) then
+	   write(6,*) 'Will be including Ionization Energy Losses!'
+	endif
+	
+	write(6,*) ''
 
 C------------------------------------------------------------------------------C
 C                           Top of Monte-Carlo loop                            C
@@ -453,12 +492,17 @@ C DJG Assume flat raster
 	  fr1 = (grnd() - 0.5) * gen_lim(7)   !raster x
 	  fr2 = (grnd() - 0.5) * gen_lim(8)   !raster y
 
-	  fry = -fr2  !+y = up, but fry needs to be positive when pointing down
-
+	  !+y = up, but fry needs to be positive when pointing down
+	  !include yoff for 'raster correction'
+	  fry = -fr2 - yoff
+	  
 c ... Actually, it seems that +x is left based on
 c ... the transformations to spectrometer coordinates
 c ... below. (Barak S. April, 2016)
-	  frx = -fr1  !+x = right, but frx is left
+c	  frx = -fr1  !+x = right, but frx is left
+	  
+          !+x = left, include xoff for raster correction
+	  frx = fr1 + xoff
 
 	  x = x + fr1
 	  y = y + fr2
@@ -480,9 +524,6 @@ C April-23, 2016 (E. Cohen): Read generated events from a file
 	     dydz = grnd()*(gen_lim_up(2)-gen_lim_down(2))/1000. + gen_lim_down(2)/1000.
 	     dxdz = grnd()*(gen_lim_up(3)-gen_lim_down(3))/1000. + gen_lim_down(3)/1000.
 	  endif
-
-C Write to File
-c	  write (3,*) dpp,dydz,dxdz,z,x,y
 
 C Transform from target to HRS (TRANSPORT) coordinates.
 C We do the transformation assuming +x is beam left looking
@@ -526,104 +567,92 @@ C Drift back to zs = 0, the plane through the target center
 	  ys = ys - zs * dydzs
 	  zs = 0.0
 
-	  cos_ev = (cos_ts+dydzs*sin_ts)/sqrt(1+dydzs**2+dxdzs**2)
+	  if(use_left_arm) then
+	     cos_ev = (cos_ts-dydzs*sin_ts)/sqrt(1+dydzs**2+dxdzs**2)
+	  else
+	     cos_ev = (cos_ts+dydzs*sin_ts)/sqrt(1+dydzs**2+dxdzs**2)
+	  endif
+
 	  th_ev = acos(cos_ev)
 	  sin_ev = sin(th_ev)
 
-C Write to File
-c	  write(3,*) xs,ys,zs
-
-C Calculate multiple scattering length of target
-
+C Calculate Momentum and Energy at vertex for this event ( in MeV(/c) )
+	  momentumi = p_spec*(1.+ dpp_init/100.)
+	  energyi = sqrt(momentumi**2 + m2)
+	  
 C-----------------------------------------------------------------------------C
-C ....This is from Hall C HMS Version....
-C Case 1 : extended target:  TUNA CAN ONLY!!!!!, BEER can is old news.
-C   cryo LH2 (4.0 cm diamater = 2.0 radius)
-C   Liquid + 2 x 0.13mm Al (X0=8.89cm) tuna can
-
-c	  if (abs(gen_lim(6)).gt.3.) then   
-
-C DJG Here I'm just copying stuff from SIMC - hope it works
-C JRA this is ugly.  Solve for z position where particle intersects can.  The
-C JRA pathlength is then (z_intersect - z_scatter)/cos(theta)
-C JRA Angle from center to z_intersect is acos(z_intersect/R).  Therefore the
-C JRA angle between the particle and wall is pi/2 - (theta - theta_intersect)
-c	     t=tan(th_ev)**2
-c	     atmp=1+t
-c	     btmp=-2*z*t
-c	     ctmp=z**2*t-(gen_lim(6)/2.)**2
-c	     z_can=(-btmp+sqrt(btmp**2-4.*atmp*ctmp))/2./atmp
-c	     side_path = (z_can - z)/abs(cos_ev)
-c	     costmp=z_can/(gen_lim(6)/2.)
-c	     if (abs(costmp).le.1) then
-c		th_can=acos(z_can/(gen_lim(6)/2.))
-c	     else if (abs(costmp-1.).le.0.000001) then
-c		th_can=0.	!extreme_trip_thru_target can give z/R SLIGHTLY>1.0
-c	     else
-c		stop 'z_can > can radius in target.f !!!'
-c	     endif
-c	     s_Al =  0.0050*2.54/abs(sin(pi/2 - (th_ev - th_can)))
-c	     musc_targ_len = side_path/rad_len_cm + s_Al/8.89
-c	  else
-C Case 2 solid target
-c	     musc_targ_len = abs(gen_lim(6)/2. - z)/rad_len_cm/cos_ev
-c	  endif
-
-C Scattering before magnets:  Approximate all scattering as occuring AT TARGET.
-C  16 mil Al scattering chamber window (X0=8.89cm)
-C  15(?) cm air (X0=30420cm)
-C spectrometer entrance window
-C  15 mil Kevlar (X0=74.6cm)
-C  5 mil Mylar  (X0=28.7cm)             Total of 0.60% rad. length.
-
-c	  musc_targ_len = musc_targ_len + .016*2.54/8.89 +
-c    >          15/30420 + .015*2.54/74.6 + .005*2.54/28.7
-C-------------------------------------------------------------------------------C
-
+C Calculate multiple scattering length of target
 C Version for Hall A (added by Barak Schmookler 3/31/16)
-c ... For GMP Cryo Target:
+
+c ... For 12GeV GMP Cryo Target:
 c ... width: 3.00", wall thickness: 0.173 mm Al
 c ... the target has a tip of radius 1.5" and thickness 0.132 mm Al
 c ... Although any target length can be set in input file, it's really 15 cm 
 
 c ... So make Beer can with same dimensions:
 c ... width: 3.00", wall thickness: 0.173 mm Al
-c ... entrance/exit thickness 0.132 mm Al 
+c ... entrance/exit thickness: 0.132 mm Al 
 
-! ... compute distances travelled for 12GeV LHRS (RHRS)
-! ... 16.0 mil of Al-foil for the target chamber exit foil
-! ... 10.62" (13.33") of air between scattering chamber and HRS vacuum
-! ... 12.0 mil Kapton for spectrometer entrance (Use mylar, since 
-! .....                 X0=28.6cm for Kapton, X0=28.7cm for Mylar) 
+c ... compute distances travelled assuming 6GeV HRS (E. Schulte thesis)
+c ... 13.0 mil of Al-foil for the target chamber exit foil
+c ... WILD GUESS:  ~15 cm air between scattering chamber and HRS vacuum
+c ... 10.0 mil of Kapton for spectrometer entrance (Use mylar, since 
+c ...         X0=28.6cm for Kapton, X0=28.7cm for Mylar) 
+
+C-----------------------------------------------------------------------------C
+
+!Distances in materials after target
+	  s_Al = 0.013*inch_cm
+          s_air = 15
+          s_mylar = 0.010*inch_cm
 
 !Require Liquid target to be bigger than...2cm
 	  if (abs(gen_lim(6)).gt.2.) then   
-	     forward_path = (gen_lim(6)/2.-z) / abs(cos_ev)
+	     forward_path = (gen_lim(6)/2. + zoff - z) / abs(cos_ev)
 	     s_target = forward_path
 	     
-	     side_path = (1.50*2.54) / abs(sin_ev)
+	     side_path = (1.50*inch_cm) / abs(sin_ev)
 	     if (forward_path.lt.side_path) then
-		s_Al = 0.0132 / abs(cos_ev)
+		s_Al = s_Al + (0.0132 / abs(cos_ev))
 	     else
 		s_target = side_path
-		s_Al = 0.0173 / abs(sin_ev)
+		s_Al = s_Al + (0.0173 / abs(sin_ev))
 	     endif
-	     musc_targ_len = s_target/rad_len_cm + s_Al/8.89
+	     musc_targ_len = s_target/rad_len_cm + s_Al/X0_cm_Al
 	  else
 !Solid Target
-	     musc_targ_len = abs(gen_lim(6)/2. + zoff - z)/rad_len_cm/abs(cos_ev)
+	     s_target = abs(gen_lim(6)/2. + zoff - z)/abs(cos_ev)
+	     musc_targ_len = s_target/rad_len_cm
 	  endif
 
 !Scattering before spectrometer vacuum (assume 12 GeV RHRS)
-	  musc_targ_len = musc_targ_len + .016*2.54/8.89 +
-     >           13.33*2.54/30420 + .012*2.54/28.7
+	  musc_targ_len = musc_targ_len + s_Al/X0_cm_Al + s_air/X0_cm_air + s_mylar/X0_cm_mylar
 
-C Begin transporting particle.  
-	  if (ms_flag) call musc(m2,p_spec*(1.+dpps/100.),musc_targ_len,dydzs,dxdzs)
+!Energy Loss for generated particle
+	  if (eloss_flag) then
+	     
+	     typeflag = 1
 
-C Write to File
-c	  write(3,*) xs,ys,zs,pathlen
+	     call enerloss_new(s_target,targ_rho,targ_Z,targ_A,energyi,mass,typeflag,Eloss_target)
+	     call enerloss_new(s_Al,rho_Al,Z_Al,A_Al,energyi,mass,typeflag,Eloss_Al)
+	     call enerloss_new(s_air,rho_air,Z_air,A_air,energyi,mass,typeflag,Eloss_air)
+	     call enerloss_new(s_mylar,rho_mylar,Z_mylar,A_mylar,energyi,mass,typeflag,Eloss_mylar)
+	     
+	     Elossi = Eloss_target + Eloss_Al + Eloss_air + Eloss_mylar
+	     
+	  else
+	     Elossi = 0
+	  endif
+	  
+C Begin transporting particle  
+	  if (ms_flag) call musc(m2,momentumi,musc_targ_len,dydzs,dxdzs)
 
+C Calculate values going through spectrometer
+	  energys = energyi - Elossi
+	  momentums = sqrt(energys**2 - m2)
+	  dpps = 100.*( (momentums-p_spec)/p_spec )
+
+C Transport through spectrometer
 	  if(use_left_arm) then	    
 	     call mc_hrsl(p_spec, th_spec, dpps, xs, ys, zs, dxdzs, dydzs,
      >		x_fp, dx_fp, y_fp, dy_fp, m2,
@@ -644,18 +673,99 @@ c	  write(3,*) xs,ys,zs,pathlen
 	    dph_recon = dxdzs*1000.		!mr
 	    ytar_recon = + ys
 
-	    !rough calculation of z-target
+!       Reconstruct reaction z vertex
+!       ... We assume the following is known:
+!       ... spectrometer theta and phi
+!       ... spectrometer y,z,y'(phi_tar) offsets
+!       ... raster current for each event, and target offset
+!       ... also remember +x beam points left looking downstream
+	    
+	    y_coff  = ytar_recon + spec_yoff
+	    y_coff = y_coff - spec_zoff*((dth_recon-spec_ypoff)/1000.)
+	    
+	    x_beam = frx
+        
+	    arg1 = atan((dth_recon-spec_ypoff)/1000.)
+	    aa1 = cos(arg1)
+	    
 	    if(use_left_arm) then
-	       ztar_recon = -ytar_recon/sin_ts
+	       aa1 = aa1 / sin(arg1 + th_spec)
+	       aa2 = cos(arg1 + th_spec)
+	       aa2 = aa2 / sin(arg1 + th_spec)
 	    else
-	       ztar_recon = ytar_recon/sin_ts
+	       aa1 = aa1 / sin(arg1 - th_spec)
+	       aa2 = cos(arg1 - th_spec)
+	       aa2 = aa2 / sin(arg1 - th_spec)
+	    endif
+	    
+	    ztar_recon = -(y_coff * aa1) + (x_beam * aa2)
+
+	    !calculation of reconstructed momentum and energy ( in MeV(/c) ) at Spec.
+	    momentumf = p_spec*(1.+ dpp_recon/100.)
+	    energyf = sqrt(momentumf**2 + m2)
+
+	    !calculation of reconstructed scattering angle
+	    if(use_left_arm) then
+	       cos_rec = (cos_ts-dydzs*sin_ts)/sqrt(1+dydzs**2+dxdzs**2)
+	    else
+	       cos_rec = (cos_ts+dydzs*sin_ts)/sqrt(1+dydzs**2+dxdzs**2)
+	    endif
+	    
+	    theta_rec = acos(cos_rec)
+	    sin_rec = sin(theta_rec)
+	    
+	    !Calculate Reconstructed (Most-Probable) Energy Loss
+	    if (eloss_flag) then
+
+	       !First calc path-lengths using reconstructed quantities
+	       !Distances in materials after target
+	       s_Al = 0.013*inch_cm
+	       s_air = 15
+	       s_mylar = 0.010*inch_cm
+
+	       !Require Liquid target to be bigger than...2cm
+	       if (abs(gen_lim(6)).gt.2.) then   
+		  forward_path = (gen_lim(6)/2. + zoff - ztar_recon) / abs(cos_rec)
+		  s_target = forward_path
+		  
+		  side_path = (1.50*inch_cm) / abs(sin_rec)
+		  if (forward_path.lt.side_path) then
+		     s_Al = s_Al + (0.0132 / abs(cos_rec))
+		  else
+		     s_target = side_path
+		     s_Al = s_Al + (0.0173 / abs(sin_rec))
+		  endif
+		  musc_targ_len = s_target/rad_len_cm + s_Al/X0_cm_Al
+	       else
+		  !Solid Target
+		  s_target = abs(gen_lim(6)/2.)/abs(cos_rec) !Dominated by resolution... assume target mid-point
+		  musc_targ_len = s_target/rad_len_cm
+	       endif
+	       
+	       !Now Calculate Energy Losses
+	       typeflag = 4
+	       
+	       call enerloss_new(s_target,targ_rho,targ_Z,targ_A,energyf,mass,typeflag,Eloss_target)
+	       call enerloss_new(s_Al,rho_Al,Z_Al,A_Al,energyf,mass,typeflag,Eloss_Al)
+	       call enerloss_new(s_air,rho_air,Z_air,A_air,energyf,mass,typeflag,Eloss_air)
+	       call enerloss_new(s_mylar,rho_mylar,Z_mylar,A_mylar,energyf,mass,typeflag,Eloss_mylar)
+	       
+	       Elossf = Eloss_target + Eloss_Al + Eloss_air + Eloss_mylar
+	       
+	    else
+	       Elossf = 0
 	    endif
 
+	    !Calculate momentum and energy ( in MeV(/c) ) at Vertex
+	    energyf = energyf + Elossf
+	    momentumf = sqrt(energyf**2 - m2)
+	    
+	    !Check event status
 	    good_evt = 0
 	    if(ok_spec) then
 	       good_evt = 1
 	    endif
-
+	    
 C Output NTUPLE entry.
 
 	    if (hut_ntuple) then
@@ -677,6 +787,16 @@ C Output NTUPLE entry.
 	      hut(16) = stop_where
 	      hut(17) = x_stop
 	      hut(18) = y_stop
+	      hut(19) = ztar_init
+	      hut(20) = ztar_recon
+	      hut(21) = th_ev*degrad
+	      hut(22) = theta_rec*degrad
+	      hut(23) = momentumi
+	      hut(24) = energyi
+	      hut(25) = momentumf
+	      hut(26) = energyf
+	      hut(27) = Elossi
+	      hut(28) = Elossf
 !	      hut(13)= hit_calo 
 	      call hfn(1,hut)
 	    endif
@@ -856,7 +976,6 @@ C =============================== Format Statements ============================
 1015	format(/,
      >  i8,' stopped in the FIXED SLIT HOR',/
      >  i8,' stopped in the FIXED SLIT VERT',/
-     >  i8,' stopped in the FIXED SLIT OCTAGON',/
      >  i8,' stopped in Q1 ENTRANCE',/
      >  i8,' stopped in Q1 MIDPLANE',/
      >  i8,' stopped in Q1 EXIT',/

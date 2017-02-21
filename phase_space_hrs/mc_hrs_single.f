@@ -415,23 +415,23 @@ c	read (chanin,1001) str_line
 	if (tmp_int.eq.1) use_left_arm = .true.
 
 C Set particle masses.
-	mass = me		!default to electron
-	m2 = me2
+	mass = Me		!default to electron
+	m2 = Me2
 	if(p_flag.eq.0) then
-	   mass = me
-	   m2 = me2
+	   mass = Me
+	   m2 = Me2
 	else if(p_flag.eq.1) then
-	   mass = mp
-	   m2 = mp2
+	   mass = Mp
+	   m2 = Mp2
 	else if(p_flag.eq.2) then
-	   mass = md
-	   m2 = md2
+	   mass = Md
+	   m2 = Md2
 	else if(p_flag.eq.3) then
-	   mass = mpi
-	   m2 = mpi2
+	   mass = Mpi
+	   m2 = Mpi2
 	else if(p_flag.eq.4) then
-	   mass = mk
-	   m2 = mk2
+	   mass = Mk
+	   m2 = Mk2
 	endif
 
 C Initialize the random number generator
@@ -976,7 +976,6 @@ C =============================== Format Statements ============================
 1015	format(/,
      >  i8,' stopped in the FIXED SLIT HOR',/
      >  i8,' stopped in the FIXED SLIT VERT',/
-     >  i8,' stopped in the FIXED SLIT OCTAGON',/
      >  i8,' stopped in Q1 ENTRANCE',/
      >  i8,' stopped in Q1 MIDPLANE',/
      >  i8,' stopped in Q1 EXIT',/
