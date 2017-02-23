@@ -1,9 +1,9 @@
 !------------------------------------------------------------------------------
 ! Input file for MC_HRS_SINGLE
-! C12 target
+! Extended target
 !------------------------------------------------------------------------------
-     500000	Monte-Carlo trials
-     1000.0	Spectrometer momentum (in MeV/c)
+     250000	Monte-Carlo trials
+     2000.0	Spectrometer momentum (in MeV/c)
      48.75	Spectrometer angle (in degrees)
     -10.0	M.C. DP/P  down limit 
      10.0	M.C. DP/P  up   limit 
@@ -13,7 +13,7 @@
      100.0	M.C. Phi   down limit (mr)
      0.0	Horiz beam spot size in cm (Full width of +/- 1 sigma)
      0.0	Vert  beam spot size in cm (Full width of +/- 1 sigma)
-     10.0       Thickness of target (Full width, cm)
+     15.0       Thickness of target (Full width, cm)
      0.0        Raster half-width x (cm)
      0.0        Raster half-width y (cm)
      50.0	DP/P  reconstruction cut (half width in % )
@@ -21,9 +21,9 @@
      100.0	Phi   reconstruction cut (half width in mr)
      50.0	ZTGT  reconstruction cut (Half width in cm)
      19.32	one radiation length of target material (in cm)
-     2.21	target density in g/cm^3
-     6		target atomic number Z
-     12.01	target standard atomic weight A   
+     0.0723	target density in g/cm^3
+     1		target atomic number Z
+     1.007	target standard atomic weight A   
      0.0        Beam x offset (cm)  +x = beam left
      0.0	Beam y offset (cm)  +y = up
      0.0        Target z offset (cm)+z = downstream (0.25)

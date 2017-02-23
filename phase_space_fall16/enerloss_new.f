@@ -6,6 +6,8 @@
 	real*8 x,chsi,lambda,gauss1,Eloss_mp,gamma,tau
 	real*8 denscorr,CO,hnup,log10bg,I,beta,Eloss_mp_new
 	real*8 Eloss_save,Ke
+	real*8 grnd
+	real*4 uni,ranlan
 
 	integer typeflag          !1=normal eloss (picked from distribution)
                                   !2=min eloss
@@ -74,19 +76,27 @@ c	  write(6,*) 'ELOSS',Eloss_mp,Eloss_mp_new
 	  Eloss_mp = Eloss_mp_new*1000.
 	  chsi = 0.307075/2.*zeff/aeff*thick/beta**2
 	  if(typeflag.eq.1)then
-	    x=abs(gauss1(10.0e0))
+	     !x=abs(gauss1(10.0e0))
+	     !if(x.gt.0.0) then            
+		!lambda = -2.0*log(x)
+	     !else
+		!lambda = 100000.
+	     !endif 
+	     
+	     uni=grnd()
+	     lambda = dble(ranlan(uni))
+	     !if(lambda.gt.100.0) lambda = 100.0 !cutoff
 	  elseif(typeflag.eq.2)then
-	    x=3
+	     x=3
+	     lambda = -2.0*log(x)
 	  elseif(typeflag.eq.3)then
-	    x=0.0067
+	     x=0.0067
+	     lambda = -2.0*log(x)
 	  elseif(typeflag.eq.4)then
-	    x=1
+	     x=1
+	     lambda = -2.0*log(x)
           endif
-	  if(x.gt.0.0) then
-	    lambda = -2.0*log(x)
-	  else
-	    lambda = 100000.
-	  endif
+	  
 	  Eloss = lambda*chsi+eloss_mp
 	endif
 

@@ -660,6 +660,10 @@ C Begin transporting particle
 
 C Calculate values going through spectrometer
 	  energys = energyi - Elossi
+	  if(energys.lt.mass) then !additional protection...
+             energys = mass + 0.0000001 !...since going through multiple materials
+             Elossi = energyi - energys
+          endif
 	  momentums = sqrt(energys**2 - m2)
 	  dpps = 100.*( (momentums-p_spec)/p_spec )
 
