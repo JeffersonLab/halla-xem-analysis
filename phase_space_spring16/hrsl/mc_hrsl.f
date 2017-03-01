@@ -184,13 +184,13 @@ C Read in transport coefficients.
 ! Begin transporting particle.
 ! Do transformations, checking against apertures.
 
-!
+
 ! Front of external Collimator/Sieve
 	zdrift = 97.10
 	ztmp = zdrift
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
 	if ( (abs(ys-y_off).gt.h_entr) .or. (abs(xs-x_off).gt.v_entr) ) then
-	   lSTOP_col_entr = lSTOP_col_entr + 1
+	   lSTOP_ecol_entr = lSTOP_ecol_entr + 1
 	   stop_where=1.
 	   x_stop=xs
 	   y_stop=ys
@@ -219,7 +219,7 @@ C Read in transport coefficients.
 	   enddo
 	   
 	   if(.not.sieve_flag) then
-	      lSTOP_col_entr = lSTOP_col_entr + 1
+	      lSTOP_ecol_entr = lSTOP_ecol_entr + 1
 	      stop_where=1.
 	      x_stop=xs
 	      y_stop=ys
@@ -263,7 +263,7 @@ C Read in transport coefficients.
 	   enddo
 
            if(.not.sieve_flag) then
-              lSTOP_col_entr = lSTOP_col_entr + 1
+              lSTOP_ecol_entr = lSTOP_ecol_entr + 1
               stop_where=1.
               x_stop=xs
               y_stop=ys
@@ -277,7 +277,7 @@ C Read in transport coefficients.
 	ztmp = ztmp + zdrift
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
 	if ( (abs(ys-y_off).gt.h_exit) .or. (abs(xs-x_off).gt.v_exit) ) then
-	   lSTOP_col_exit = lSTOP_col_exit + 1
+	   lSTOP_ecol_exit = lSTOP_ecol_exit + 1
 	   stop_where=2.
 	   x_stop=xs
 	   y_stop=ys
@@ -306,7 +306,7 @@ C Read in transport coefficients.
 	   enddo
 	   
 	   if(.not.sieve_flag) then
-	      lSTOP_col_exit = lSTOP_col_exit + 1
+	      lSTOP_ecol_exit = lSTOP_ecol_exit + 1
 	      stop_where=2.
 	      x_stop=xs
 	      y_stop=ys
@@ -350,7 +350,7 @@ C Read in transport coefficients.
 	   enddo
 
            if(.not.sieve_flag) then
-              lSTOP_col_exit = lSTOP_col_exit + 1
+              lSTOP_ecol_exit = lSTOP_ecol_exit + 1
               stop_where=2.
               x_stop=xs
               y_stop=ys
@@ -371,14 +371,16 @@ C Read in transport coefficients.
 	  goto 500
 	endif
 
-! Entrance to collimator box (circular aperture)
 ! Note that the collimator box is always left in the open
-! position because of use of external sieve. So, no check
-! at the entrance and exit of the collimator is necessary.
-	zdrift = 106.49 - ztmp
-	ztmp = 106.49
+! position because of use of external sieve. The colimator box
+! entrance aperture was checked on 02/28/17 and found to be a
+! rectangle inscribed in a circle. The entrance is at 10.49cm
+! and the aperture is 1" thick. So, we'll do the check at the back
+! of the aperture.
+	zdrift = 109.03 - ztmp
+	ztmp = 109.03
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
-	if (sqrt(xs*xs+ys*ys).gt.10.185) then
+	if (sqrt(xs*xs+ys*ys).gt.9.45 .or. abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
 	  lSTOP_box_entr = lSTOP_box_entr + 1
 	  stop_where=4.
 	  x_stop=xs
@@ -386,13 +388,27 @@ C Read in transport coefficients.
 	  goto 500
 	endif
 
+! Aperture at back of collimator box was found to be a rectangle.
+! This aperture is also 1" thick and we'll do the check at the
+! back of the aperture.
+	zdrift = 120.62 - ztmp
+	ztmp = 120.62
+	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+        if (abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
+          lSTOP_box_exit = lSTOP_box_exit + 1
+          stop_where=5.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
 ! Aperture before Q1 (can only check this if next transformation is DRIFT).
 	zdrift = 135.064 - ztmp
 	ztmp = 135.064
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.12.5222) then
 	  lSTOP_Q1_in = lSTOP_Q1_in + 1
-	  stop_where=5.
+	  stop_where=6.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -405,7 +421,7 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if ((xs*xs + ys*ys).gt.r_Q1*r_Q1) then
 	  lSTOP_Q1_in = lSTOP_Q1_in + 1
-	  stop_where=6.	
+	  stop_where=7.	
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -416,7 +432,7 @@ C Read in transport coefficients.
 	call transp(spectr,2,decay_flag,dflag,m2,p,62.75333333e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q1*r_Q1) then
 	  lSTOP_Q1_mid = lSTOP_Q1_mid + 1
-	  stop_where=7.
+	  stop_where=8.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -427,7 +443,7 @@ C Read in transport coefficients.
 	call transp(spectr,3,decay_flag,dflag,m2,p,31.37666667e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q1*r_Q1) then
 	  lSTOP_Q1_out = lSTOP_Q1_out + 1
-	  stop_where=8.
+	  stop_where=9.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -440,7 +456,7 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.14.9225) then
 	  lSTOP_Q1_out = lSTOP_Q1_out + 1
-	  stop_where=9.
+	  stop_where=10.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -451,7 +467,7 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.20.9550) then
 	  lSTOP_Q2_in = lSTOP_Q2_in + 1
-	  stop_where=10.
+	  stop_where=11.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -464,7 +480,7 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if ((xs*xs + ys*ys).gt.r_Q2*r_Q2) then
 	  lSTOP_Q2_in = lSTOP_Q2_in + 1
-	  stop_where=11.
+	  stop_where=12.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -475,7 +491,7 @@ C Read in transport coefficients.
 	call transp(spectr,5,decay_flag,dflag,m2,p,121.77333333e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q2*r_Q2) then
 	  lSTOP_Q2_mid = lSTOP_Q2_mid + 1
-	  stop_where=12.
+	  stop_where=13.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -486,7 +502,7 @@ C Read in transport coefficients.
 	call transp(spectr,6,decay_flag,dflag,m2,p,60.88666667e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q2*r_Q2) then
 	  lSTOP_Q2_out = lSTOP_Q2_out + 1
-	  stop_where=13.
+	  stop_where=14.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -499,7 +515,7 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.30.0073) then
 	  lSTOP_Q2_out = lSTOP_Q2_out + 1
-	  stop_where=14.
+	  stop_where=15.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -510,7 +526,7 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.30.0073) then
 	  lSTOP_Q2_out = lSTOP_Q2_out + 1
-	  stop_where=15.
+	  stop_where=16.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -521,7 +537,7 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (abs(xs).gt.50.0 .or. abs(ys).gt.15.0) then
 	  lSTOP_D1_in = lSTOP_D1_in + 1
-	  stop_where=16.
+	  stop_where=17.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -537,14 +553,14 @@ C Read in transport coefficients.
 	call rotate_haxis(-30.0,xt,yt)
 	if (abs(xt-2.500).gt.52.5) then		! -50 < x < +55
 	  lSTOP_D1_in = lSTOP_D1_in + 1	
-	  stop_where=17.
+	  stop_where=18.
 	  x_stop=xt
 	  y_stop=yt
 	  goto 500
 	endif
 	if ( (abs(yt)+0.01861*xt) .gt. 12.5 ) then !tan(1.066) ~ 0.01861
 	  lSTOP_D1_in = lSTOP_D1_in +1
-	  stop_where=17.
+	  stop_where=18.
 	  x_stop=xt
 	  y_stop=yt
 	  goto 500
@@ -559,7 +575,7 @@ C Read in transport coefficients.
 	call rotate_haxis(30.0,xt,yt)
 	if (abs(xt-2.500).gt.52.5) then		! -50 < x < +55
 	  lSTOP_D1_out = lSTOP_D1_out + 1
-	  stop_where=18.
+	  stop_where=19.
 	  x_stop=xt
 	  y_stop=yt
 	  goto 500
@@ -567,7 +583,7 @@ C Read in transport coefficients.
 
 	if ( (abs(yt)+0.01861*xt) .gt. 12.5 ) then !tan(1.066) ~ 0.01861
 	  lSTOP_D1_out = lSTOP_D1_out + 1
-	  stop_where = 18.
+	  stop_where = 19.
 	  x_stop=xt
 	  y_stop=yt
 	  goto 500
@@ -581,14 +597,14 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.30.3276) then
 	  lSTOP_D1_out = lSTOP_D1_out + 1
-	  stop_where=19.
+	  stop_where=20.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
 	endif
 	if (abs(xs).gt.50.0 .or. abs(ys).gt.15.0) then
 	  lSTOP_D1_out = lSTOP_D1_out + 1
-	  stop_where=19.
+	  stop_where=20.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -599,7 +615,7 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.30.3276) then
 	  lSTOP_Q3_in = lSTOP_Q3_in + 1
-	  stop_where=20.
+	  stop_where=21.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -612,7 +628,7 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if ((xs*xs + ys*ys).gt.r_Q3*r_Q3) then
 	  lSTOP_Q3_in = lSTOP_Q3_in + 1	
-	  stop_where=21.
+	  stop_where=22.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -623,7 +639,7 @@ C Read in transport coefficients.
 	call transp(spectr,10,decay_flag,dflag,m2,p,121.7866667e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q3*r_Q3) then
 	  lSTOP_Q3_mid = lSTOP_Q3_mid + 1
-	  stop_where=22.
+	  stop_where=23.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -634,7 +650,7 @@ C Read in transport coefficients.
 	call transp(spectr,11,decay_flag,dflag,m2,p,60.89333333e0,pathlen)
 	if ((xs*xs + ys*ys).gt.r_Q3*r_Q3) then
 	  lSTOP_Q3_out = lSTOP_Q3_out + 1
-	  stop_where=23.
+	  stop_where=24.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -647,7 +663,7 @@ C Read in transport coefficients.
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (abs(xs).gt.35.56 .or. abs(ys).gt.17.145) then
 	  lSTOP_Q3_out = lSTOP_Q3_out + 1
-	  stop_where=24.
+	  stop_where=25.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -666,7 +682,7 @@ C Read in transport coefficients.
 
 	if (abs(xt).gt.99.76635 .or. abs(yt).gt.17.145) then
 	  lSTOP_Q3_out = lSTOP_Q3_out + 1
-	  stop_where=25.
+	  stop_where=26.
 	  x_stop=xs   !Keep as transport
 	  y_stop=ys   !Keep as transport
 	  goto 500

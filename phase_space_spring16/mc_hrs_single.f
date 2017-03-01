@@ -166,10 +166,11 @@ C
 	rSTOP_successes	= 0
 
 	lSTOP_trials    = 0
-        lSTOP_col_entr  = 0
-        lSTOP_col_exit  = 0
+        lSTOP_ecol_entr = 0
+        lSTOP_ecol_exit = 0
         lSTOP_spec_entr = 0
         lSTOP_box_entr  = 0
+	lSTOP_box_exit  = 0
         lSTOP_Q1_in     = 0
         lSTOP_Q1_mid    = 0
         lSTOP_Q1_out    = 0
@@ -886,8 +887,8 @@ C Close NTUPLE file.
 C Indicate where particles are lost in spectrometer.
         if(use_left_arm) then
            write (chanout,1016)
-     >  lSTOP_col_entr,lSTOP_col_exit,
-     >  lSTOP_spec_entr,lSTOP_box_entr,
+     >  lSTOP_ecol_entr,lSTOP_ecol_exit,
+     >  lSTOP_spec_entr,lSTOP_box_entr,lSTOP_box_exit,
      >  lSTOP_Q1_in,lSTOP_Q1_mid,lSTOP_Q1_out,
      >  lSTOP_Q2_in,lSTOP_Q2_mid,lSTOP_Q2_out,
      >  lSTOP_Q3_in,lSTOP_Q3_mid,lSTOP_Q3_out,
@@ -1030,6 +1031,7 @@ C =============================== Format Statements ============================
      >  i8,' stopped in COL (Sieve) Exit',/
      >  i8,' stopped in Spectrometer Entrance',/
      >  i8,' stopped in BOX Entrance',/
+     >  i8,' stopped in BOX Exit',/
      >  i8,' stopped in Q1 ENTRANCE',/
      >  i8,' stopped in Q1 MIDPLANE',/
      >  i8,' stopped in Q1 EXIT',/
