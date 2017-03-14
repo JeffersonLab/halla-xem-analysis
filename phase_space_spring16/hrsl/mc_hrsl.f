@@ -374,11 +374,22 @@ C Read in transport coefficients.
 ! Note that the collimator box is always left in the open
 ! position because of use of external sieve. The colimator box
 ! entrance aperture was checked on 02/28/17 and found to be a
-! rectangle inscribed in a circle. The entrance is at 10.49cm
-! and the aperture is 1" thick. So, we'll do the check at the back
-! of the aperture.
-	zdrift = 109.03 - ztmp
-	ztmp = 109.03
+! rectangle inscribed in a circle. The entrance is at 107.07cm
+! and the aperture is 1" thick. So, we'll do the check at both the
+! front and back of the aperture.
+	zdrift = 107.07 - ztmp
+        ztmp = 107.07
+        call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+	if (sqrt(xs*xs+ys*ys).gt.9.45 .or. abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
+          lSTOP_box_entr = lSTOP_box_entr + 1
+          stop_where=4.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
+	zdrift = 109.605 - ztmp
+	ztmp = 109.605
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
 	if (sqrt(xs*xs+ys*ys).gt.9.45 .or. abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
 	  lSTOP_box_entr = lSTOP_box_entr + 1
@@ -388,19 +399,39 @@ C Read in transport coefficients.
 	  goto 500
 	endif
 
-! Aperture at back of collimator box was found to be a rectangle.
-! This aperture is also 1" thick and we'll do the check at the
-! back of the aperture.
-	zdrift = 120.62 - ztmp
-	ztmp = 120.62
-	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+! Aperture at back of collimator box was found to be a rectangle
+! at it entrance (118.66cm). This aperture is also 1" thick, but it is beveled
+! in the center. So, we'll do the check at the front and back 
+! of the aperture.
+	zdrift = 118.66 - ztmp
+        ztmp = 118.66
+        call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
         if (abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
-          lSTOP_box_exit = lSTOP_box_exit + 1
+	  lSTOP_box_exit = lSTOP_box_exit + 1
           stop_where=5.
           x_stop=xs
           y_stop=ys
           goto 500
         endif
+
+	zdrift = 121.195 - ztmp
+	ztmp = 121.195
+	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+        if (abs(xs).gt.8.573 .or. abs(ys).gt.8.255) then
+	  lSTOP_box_exit = lSTOP_box_exit + 1
+	  stop_where=5.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
+	if((abs(xs).gt.7.94 .and. abs(ys).gt.5.255) .or. (abs(ys).gt.7.62 .and. abs(xs).gt.6.573)) then
+	  lSTOP_box_exit = lSTOP_box_exit + 1
+	  stop_where=5.
+	  x_stop=xs
+	  y_stop=ys
+          goto 500
+	endif
 
 ! Aperture before Q1 (can only check this if next transformation is DRIFT).
 	zdrift = 135.064 - ztmp
