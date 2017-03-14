@@ -13,7 +13,7 @@ Contents
 Additional Information
 ----------------------
 
-* Some information can be found [here](https://hallaweb.jlab.org/wiki/index.php/Simulation_using_SIMC).
+* Some information can be found [here](https://hallaweb.jlab.org/wiki/index.php/Simulation_using_SIMC) and [here](http://hallaweb.jlab.org/12GeV/experiment/E12-07-108/Publications/Technical/Spectrometer/simc_extra.pdf).
 * Currently, the 'carbon_foil.inp' file is the only up-to-date input file in each subdirectory.
 * A paw ntuple output file is created in the "worksim" subdirectory. It can be converted to a ROOT file using the h2root utility.
 * I plan on addition some more info on what is written out to the output file at a later date.
