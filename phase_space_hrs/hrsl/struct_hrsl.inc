@@ -22,7 +22,8 @@
 ! STAND ALONE CODES.
 
 	integer*4 lSTOP_trials
-	integer*4 lSTOP_slit_hor,lSTOP_slit_vert
+	integer*4 lSTOP_box_entr
+	integer*4 lSTOP_slit_hor,lSTOP_slit_vert,lSTOP_box_exit
 	integer*4 lSTOP_Q1_in,lSTOP_Q1_mid,lSTOP_Q1_out
 	integer*4 lSTOP_Q2_in,lSTOP_Q2_mid,lSTOP_Q2_out
 	integer*4 lSTOP_Q3_in,lSTOP_Q3_mid,lSTOP_Q3_out
@@ -31,7 +32,9 @@
 	integer*4 lSTOP_s1,lSTOP_s2,lSTOP_cal,lSTOP_successes
 
 	common/spectrometer4/ lSTOP_trials,
+     >           lSTOP_box_entr,
      >		 lSTOP_slit_hor,lSTOP_slit_vert,
+     >           lSTOP_box_exit,
      >		 lSTOP_Q1_in,lSTOP_Q1_mid,lSTOP_Q1_out,
      >		 lSTOP_Q2_in,lSTOP_Q2_mid,lSTOP_Q2_out,
      >		 lSTOP_Q3_in,lSTOP_Q3_mid,lSTOP_Q3_out,

@@ -262,8 +262,34 @@ C Read in transport coefficients.
 	  y_stop=ys
 	  goto 500
 	endif
-	
 
+! The colimator box entrance aperture was checked on 02/28/17 and 
+! found to be a rectangle inscribed in a circle. The entrance is at 106.47cm
+! and the aperture is 1" thick. So, we'll do the check at both the
+! front and back of the aperture.
+
+        zdrift = 106.47 - ztmp
+        ztmp = 106.47
+        call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+	if (sqrt(xs*xs+ys*ys).gt.9.45 .or. abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
+          rSTOP_box_entr = rSTOP_box_entr + 1
+          stop_where=100.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
+        zdrift = 108.81 - ztmp
+        ztmp = 108.81
+        call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+	if (sqrt(xs*xs+ys*ys).gt.9.45 .or. abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
+          rSTOP_box_entr = rSTOP_box_entr + 1
+          stop_where=100.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+	
 ! Check front of fixed slit.
 
 	zdrift = z_entr - ztmp
@@ -286,6 +312,7 @@ C Read in transport coefficients.
 ! Check back of fixed slit.
 
 	zdrift = z_exit - z_entr
+	ztmp = z_exit
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
 	if (abs(ys-y_off).gt.h_exit) then
 	  rSTOP_slit_hor = rSTOP_slit_hor + 1
@@ -302,10 +329,44 @@ C Read in transport coefficients.
 	  goto 500
 	endif
 
+! Aperture at back of collimator box was found to be a rectangle
+! at it entrance (118.35cm). This aperture is also 1" thick, but it is beveled
+! in the center. So, we'll do the check at the front and back 
+! of the aperture.
+        zdrift = 118.35 - ztmp
+        ztmp = 118.35
+        call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+        if (abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
+          rSTOP_box_exit = rSTOP_box_exit + 1
+          stop_where=101.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
+        zdrift = 120.89 - ztmp
+        ztmp = 120.89
+        call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+        if (abs(xs).gt.8.573 .or. abs(ys).gt.8.255) then
+          rSTOP_box_exit = rSTOP_box_exit + 1
+          stop_where=101.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
+	if((abs(xs).gt.7.94 .and. abs(ys).gt.5.255) .or. (abs(ys).gt.7.62 .and. abs(xs).gt.6.573)) then
+          rSTOP_box_exit = rSTOP_box_exit + 1
+          stop_where=101.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
 ! Aperture before Q1 (can only check this if next transformation is DRIFT).
 
+	zdrift = 135.064 - ztmp
 	ztmp = 135.064
-	zdrift = ztmp - z_exit
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.12.5222) then
 	  rSTOP_Q1_in = rSTOP_Q1_in + 1
@@ -571,15 +632,21 @@ C Read in transport coefficients.
 	endif
 
 ! Vacuum window is 15.522cm before FP (which is at VDC1)
+! The window is in the horrizontal plane.
 
 	zdrift = 2327.47246 - 2080.38746
 	ztmp = ztmp + zdrift			!distance from Q3 exit
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
-	if (abs(xs).gt.99.76635 .or. abs(ys).gt.17.145) then
+
+	xt=xs
+        yt=ys
+        call rotate_haxis(45.0e0,xt,yt)
+	
+	if (abs(xt).gt.99.76635 .or. abs(yt).gt.17.145) then
 	  rSTOP_Q3_out = rSTOP_Q3_out + 1
 	  stop_where=32.
-	  x_stop=xs
-	  y_stop=ys
+	  x_stop=xs !Keep as transport
+	  y_stop=ys !Keep as transport
 	  goto 500
 	endif
 
