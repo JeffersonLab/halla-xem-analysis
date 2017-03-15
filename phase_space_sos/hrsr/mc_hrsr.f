@@ -121,8 +121,7 @@ C ================================ Executable Code =============================
 	dflag = .false.			!particle has not decayed yet
 	rSTOP_trials = rSTOP_trials + 1
 	xt = th_spec    !avoid 'unused variable' error for th_spec
-
-
+ 
 ! Collimator Option
 	if (first_time_here) then
 	   if(collimator .eq. 0) then
@@ -138,14 +137,14 @@ C ================================ Executable Code =============================
 	   endif
 
 	   if(collimator .eq. 3) then
-              use_ext_sieve = .true.
-           endif
+	      use_ext_sieve = .true.
+	   endif
 
-           if(collimator .eq. 4) then
-              use_gmp_sieve = .true.
-           endif
+	   if(collimator .eq. 4) then
+	      use_gmp_sieve = .true.
+	   endif
 
-
+	   
 	   ! No collimator - wide open
 	   if (use_open .or. use_sieve .or. use_ext_sieve .or. use_gmp_sieve) then
 	      h_entr = 99.
@@ -178,54 +177,43 @@ C ================================ Executable Code =============================
 	endif
 
 	if (use_ext_sieve) then
-           xt = x + z_exit * dxdz       !project to collimator
-           yt = y + z_exit * dydz
-           
-           xt = 2.50*nint(xt/2.50)      !shift to nearest hole.
-           yt = 1.25*nint(yt/1.25)
+	   xt = x + z_exit * dxdz       !project to collimator
+	   yt = y + z_exit * dydz
+	   
+	   xt = 2.50*nint(xt/2.50)	!shift to nearest hole.
+	   yt = 1.25*nint(yt/1.25)
 
-	   if( (abs(xt) < 0.01 .and. abs(yt) < 0.01) .or. (abs(xt+5.00) < 0.01 .and. abs(yt-1.25) < 0.01) ) then
-              rt = 0.3*sqrt(grnd()) !distance from center of hole(r=3.0mm)
-           else
-              rt = 0.2*sqrt(grnd()) !distance from center of hole(r=2.0mm)
-           endif
+	   rt = 0.2*sqrt(grnd())        !distance from center of hole(r=2.0mm)
+	   tht= 2*pi*grnd()	        !angle of offset.
+	   
+	   xt = xt + (rt * cos(tht))    !actually use distance/angle offset
+	   yt = yt + (rt * sin(tht))
 
-           tht= 2*pi*grnd()     !angle of offset.
-           
-           xt = xt + (rt * cos(tht))    !actually use distance/angle offset
-           yt = yt + (rt * sin(tht))
-
-           dxdz = (xt-x)/z_exit         !force to correct angle.
-           dydz = (yt-y)/z_exit
-        endif
+	   dxdz = (xt-x)/z_exit	        !force to correct angle.
+	   dydz = (yt-y)/z_exit
+	endif
 
 
-        if (use_gmp_sieve) then
-           xt = x + z_exit * dxdz       !project to collimator
-           yt = y + z_exit * dydz
-           
-           yt = 0.625*nint(yt/0.625)    !shift to nearest horizontal hole
-           if(mod(abs(yt),1.25) < 0.01) then
-              xt = 2.50*nint(xt/2.50)
-           else
-              xt = 2.50*nint(xt/2.50) + 1.25
-           endif
+	if (use_gmp_sieve) then
+	   xt = x + z_exit * dxdz       !project to collimator
+	   yt = y + z_exit * dydz
+	   
+	   yt = 0.625*nint(yt/0.625)    !shift to nearest horizontal hole
+	   if(mod(abs(yt),1.25) < 0.01) then
+	      xt = 2.50*nint(xt/2.50)
+	   else
+	      xt = 2.50*nint(xt/2.50) + 1.25
+	   endif
 
-	   if( (abs(xt) < 0.01 .and. abs(yt) < 0.01) .or. (abs(xt+5.00) < 0.01 .and. abs(yt-1.25) < 0.01) ) then
-              rt = 0.3*sqrt(grnd()) !distance from center of hole(r=3.0mm)
-           else
-              rt = 0.2*sqrt(grnd()) !distance from center of hole(r=2.0mm)
-           endif
+	   rt = 0.2*sqrt(grnd())        !distance from center of hole(r=2.0mm)
+	   tht= 2*pi*grnd()	        !angle of offset.
+	   
+	   xt = xt + (rt * cos(tht))    !actually use distance/angle offset
+	   yt = yt + (rt * sin(tht))
 
-           tht= 2*pi*grnd()     !angle of offset.
-           
-           xt = xt + (rt * cos(tht))    !actually use distance/angle offset
-           yt = yt + (rt * sin(tht))
-
-           dxdz = (xt-x)/z_exit         !force to correct angle.
-           dydz = (yt-y)/z_exit
-        endif
-
+	   dxdz = (xt-x)/z_exit	        !force to correct angle.
+	   dydz = (yt-y)/z_exit
+	endif
 
 ! Save spectrometer coordinates.
 
@@ -274,8 +262,34 @@ C Read in transport coefficients.
 	  y_stop=ys
 	  goto 500
 	endif
-	
 
+! The colimator box entrance aperture was checked on 02/28/17 and 
+! found to be a rectangle inscribed in a circle. The entrance is at 106.47cm
+! and the aperture is 1" thick. So, we'll do the check at both the
+! front and back of the aperture.
+
+        zdrift = 106.47 - ztmp
+        ztmp = 106.47
+        call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+	if (sqrt(xs*xs+ys*ys).gt.9.45 .or. abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
+          rSTOP_box_entr = rSTOP_box_entr + 1
+          stop_where=100.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
+        zdrift = 108.81 - ztmp
+        ztmp = 108.81
+        call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+	if (sqrt(xs*xs+ys*ys).gt.9.45 .or. abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
+          rSTOP_box_entr = rSTOP_box_entr + 1
+          stop_where=100.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+	
 ! Check front of fixed slit.
 
 	zdrift = z_entr - ztmp
@@ -298,6 +312,7 @@ C Read in transport coefficients.
 ! Check back of fixed slit.
 
 	zdrift = z_exit - z_entr
+	ztmp = z_exit
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
 	if (abs(ys-y_off).gt.h_exit) then
 	  rSTOP_slit_hor = rSTOP_slit_hor + 1
@@ -314,10 +329,44 @@ C Read in transport coefficients.
 	  goto 500
 	endif
 
+! Aperture at back of collimator box was found to be a rectangle
+! at it entrance (118.35cm). This aperture is also 1" thick, but it is beveled
+! in the center. So, we'll do the check at the front and back 
+! of the aperture.
+        zdrift = 118.35 - ztmp
+        ztmp = 118.35
+        call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+        if (abs(xs).gt.7.94 .or. abs(ys).gt.7.62) then
+          rSTOP_box_exit = rSTOP_box_exit + 1
+          stop_where=101.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
+        zdrift = 120.89 - ztmp
+        ztmp = 120.89
+        call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen)
+        if (abs(xs).gt.8.573 .or. abs(ys).gt.8.255) then
+          rSTOP_box_exit = rSTOP_box_exit + 1
+          stop_where=101.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
+	if((abs(xs).gt.7.94 .and. abs(ys).gt.5.255) .or. (abs(ys).gt.7.62 .and. abs(xs).gt.6.573)) then
+          rSTOP_box_exit = rSTOP_box_exit + 1
+          stop_where=101.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
+
 ! Aperture before Q1 (can only check this if next transformation is DRIFT).
 
+	zdrift = 135.064 - ztmp
 	ztmp = 135.064
-	zdrift = ztmp - z_exit
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.12.5222) then
 	  rSTOP_Q1_in = rSTOP_Q1_in + 1
@@ -364,7 +413,7 @@ C Read in transport coefficients.
 
 ! Apertures after Q1, before Q2 (can only check this if next trans. is DRIFT).
 
-	zdrift = 300.464 - 241.095		!SOS Quad exit is z=241.095
+	zdrift = 300.464 - 241.095              !SOS Quad exit is z=241.095
 	ztmp = zdrift				!distance from Q1 exit
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (sqrt(xs*xs+ys*ys).gt.14.9225) then
@@ -583,15 +632,21 @@ C Read in transport coefficients.
 	endif
 
 ! Vacuum window is 15.522cm before FP (which is at VDC1)
+! The window is in the horrizontal plane.
 
 	zdrift = 2327.47246 - 2080.38746
 	ztmp = ztmp + zdrift			!distance from Q3 exit
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
-	if (abs(xs).gt.99.76635 .or. abs(ys).gt.17.145) then
+
+	xt=xs
+        yt=ys
+        call rotate_haxis(45.0e0,xt,yt)
+	
+	if (abs(xt).gt.99.76635 .or. abs(yt).gt.17.145) then
 	  rSTOP_Q3_out = rSTOP_Q3_out + 1
 	  stop_where=32.
-	  x_stop=xs
-	  y_stop=ys
+	  x_stop=xs !Keep as transport
+	  y_stop=ys !Keep as transport
 	  goto 500
 	endif
 

@@ -141,8 +141,10 @@ C xiaochao:
 C using SIMC unstructured version
 C
 	rSTOP_trials	= 0
+	rSTOP_box_entr  = 0
 	rSTOP_slit_hor	= 0
 	rSTOP_slit_vert	= 0
+	rSTOP_box_exit  = 0
 	rSTOP_Q1_in	= 0
 	rSTOP_Q1_mid	= 0
 	rSTOP_Q1_out	= 0
@@ -163,8 +165,10 @@ C
 	rSTOP_successes	= 0
 	
 	lSTOP_trials	= 0
+	lSTOP_box_entr  = 0
 	lSTOP_slit_hor	= 0
 	lSTOP_slit_vert	= 0
+	lSTOP_box_exit  = 0
 	lSTOP_Q1_in	= 0
 	lSTOP_Q1_mid	= 0
 	lSTOP_Q1_out	= 0
@@ -872,7 +876,9 @@ c	close(3)
 C Indicate where particles are lost in spectrometer.
 	if(use_left_arm) then
 	   write (chanout,1015)
+     >  lSTOP_box_entr,
      >	lSTOP_slit_hor,lSTOP_slit_vert,
+     >  lSTOP_box_exit,
      >	lSTOP_Q1_in,lSTOP_Q1_mid,lSTOP_Q1_out,
      >	lSTOP_Q2_in,lSTOP_Q2_mid,lSTOP_Q2_out,
      >	lSTOP_Q3_in,lSTOP_Q3_mid,lSTOP_Q3_out,
@@ -885,7 +891,9 @@ C Indicate where particles are lost in spectrometer.
 	
 	else
 	   write (chanout,1015)
+     >  rSTOP_box_entr,
      >	rSTOP_slit_hor,rSTOP_slit_vert,
+     >  rSTOP_box_exit,
      >	rSTOP_Q1_in,rSTOP_Q1_mid,rSTOP_Q1_out,
      >	rSTOP_Q2_in,rSTOP_Q2_mid,rSTOP_Q2_out,
      >	rSTOP_Q3_in,rSTOP_Q3_mid,rSTOP_Q3_out,
@@ -978,8 +986,10 @@ C =============================== Format Statements ============================
 1012	format(1x,16i4)
 
 1015	format(/,
+     >  i8,' stopped in Coll. Box ENTRANCE',/
      >  i8,' stopped in the FIXED SLIT HOR',/
      >  i8,' stopped in the FIXED SLIT VERT',/
+     >  i8,' stopped in Coll. Box EXIT',/
      >  i8,' stopped in Q1 ENTRANCE',/
      >  i8,' stopped in Q1 MIDPLANE',/
      >  i8,' stopped in Q1 EXIT',/
