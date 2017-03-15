@@ -350,7 +350,7 @@ PROCEDURE RUN ;
 
 { REAR QUAD }
 
-      DL DR3 ;                   {Drift to Q1 physical aperture}
+      DL DR3 ;                   {Drift to Q3 physical aperture}
       APERTURE 'Q3_ENTRANCE' 'FULL' ;
       HRSQUAD  'Q3' L3 Q3 0 0 0 DD3 0.30 2/3 ;   {Q3}
 
