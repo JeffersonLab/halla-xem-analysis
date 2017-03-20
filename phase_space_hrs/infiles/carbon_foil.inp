@@ -2,7 +2,7 @@
 ! Input file for MC_HRS_SINGLE
 ! C12 target
 !------------------------------------------------------------------------------
-     500000	Monte-Carlo trials
+     100000	Monte-Carlo trials
      1000.0	Spectrometer momentum (in MeV/c)
      25.0	Spectrometer angle (in degrees)
     -10.0	M.C. DP/P  down limit 

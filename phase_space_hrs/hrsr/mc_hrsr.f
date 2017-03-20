@@ -619,9 +619,19 @@ C Read in transport coefficients.
 	endif
 
 ! Apertures after Q3 (can only check this if next trans. is DRIFT).
+	zdrift = 2054.03446 - 1997.76446        !Q3 exit is z=1997.76446
+	ztmp = zdrift
+	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
+	if ((sqrt(xs*xs+ys*ys).gt.35.3219)) then
+	  rSTOP_Q3_out = rSTOP_Q3_out + 1
+	  stop_where=102.
+          x_stop=xs
+          y_stop=ys
+          goto 500
+        endif
 
-	zdrift = 2080.38746 - 1997.76446	!Q3 exit is z=1997.76446
-	ztmp = zdrift				!distance from Q3 exit
+	zdrift = 2080.38746 - 2054.03446 
+	ztmp = ztmp + zdrift			!distance from Q3 exit
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 	if (abs(xs).gt.35.56 .or. abs(ys).gt.17.145) then
 	  rSTOP_Q3_out = rSTOP_Q3_out + 1

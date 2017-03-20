@@ -410,7 +410,7 @@ C First Chamber
      >      yt.gt.(hdc_1_left+hdc_1y_offset) .or.
      >      yt.lt.(hdc_1_right+hdc_1y_offset) ) then
 	  rSTOP_dc1 = rSTOP_dc1 + 1
-	  stop_where=25.
+	  stop_where=26.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -484,7 +484,7 @@ C Second Chamber
      >      yt.gt.(hdc_2_left+hdc_2y_offset) .or.
      >      yt.lt.(hdc_2_right+hdc_2y_offset) ) then
 	  rSTOP_dc2 = rSTOP_dc2 + 1
-	  stop_where=26.
+	  stop_where=27.
 	  x_stop=xs
 	  y_stop=ys
 	  goto 500
@@ -549,7 +549,7 @@ C finished straw chamber, drift to first hodoscope (s0)
      >      ys.gt.(hscin0_left+hscin0_y_offset) .or.
      >      ys.lt.(hscin0_right+hscin0_y_offset) ) then
 	   rSTOP_s0 = rSTOP_s0 + 1
-	   stop_where=27.
+	   stop_where=28.
 	   x_stop=xs
 	   y_stop=ys
 	   goto 500
@@ -575,7 +575,7 @@ C entrance, which is where we check.
      >      ys.gt.(hcer_left+hcer_y_offset) .or.
      >      ys.lt.(hcer_right+hcer_y_offset) ) then
 	   rSTOP_cer = rSTOP_cer + 1
-	   stop_where=28.
+	   stop_where=29.
 	   x_stop=xs
 	   y_stop=ys
 	   goto 500
@@ -616,7 +616,7 @@ C at the back.
      >      ys.gt.(hscin2_left+hscin2_y_offset) .or.
      >      ys.lt.(hscin2_right+hscin2_y_offset) ) then
 	   rSTOP_s2 = rSTOP_s2 + 1
-	   stop_where=29.
+	   stop_where=30.
 	   x_stop=xs
 	   y_stop=ys
 	   goto 500
@@ -649,7 +649,7 @@ C Right now particle must be at least 2.5cm from any edge.
      >      ys.gt.(hcal_ps_left+hcal_ps_y_offset-2.5) .or.
      >      ys.lt.(hcal_ps_right+hcal_ps_y_offset+2.5) ) then
 	   rSTOP_ps = rSTOP_ps + 1
-	   stop_where=30.
+	   stop_where=31.
 	   x_stop=xs
 	   y_stop=ys
 	   goto 500
@@ -676,7 +676,7 @@ C Right now particle must be at least 2.5cm from any edge.
      >      ys.gt.(hcal_sh_left+hcal_sh_y_offset-2.5) .or.
      >      ys.lt.(hcal_sh_right+hcal_sh_y_offset+2.5) ) then
 	   rSTOP_sh = rSTOP_sh + 1
-	   stop_where=31.
+	   stop_where=32.
 	   x_stop=xs
 	   y_stop=ys
 	   goto 500

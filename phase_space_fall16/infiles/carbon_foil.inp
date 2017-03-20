@@ -40,4 +40,4 @@
      0          collimator option: 0=Wide Open, 1=Collimator, 2=Sieve, 3=Ext Sieve, 4=GMP Sieve
      1          flag for using state file for random number generation
      0          flag for taking input from data file
-     0		flag for using Left HRS instead of Right HRS
+     1		flag for using Left HRS instead of Right HRS
