@@ -100,7 +100,7 @@ C Initial and reconstructed track quantities.
 C Control flags (from input file)
 	integer*4 p_flag			!particle identification
 	logical*4 ms_flag
-	logical*4 eloss_flag
+	logical*4 elossi_flag, elossf_flag
 	logical*4 wcs_flag
 	integer*4 col_flag
 	logical*4 gen_evts_file_flag
@@ -378,11 +378,16 @@ c	read (chanin,1001) str_line
 	if (.not.rd_int(str_line,tmp_int)) stop 'ERROR: ms_flag in setup file!'
 	if (tmp_int.eq.1) ms_flag = .true.
 
-! Read in flag for ionization energy loss.
+! Read in flag for ionization energy loss of generated particles 
 	read (chanin,1001) str_line
 	write(6,*) str_line(1:last_char(str_line))
-	if (.not.rd_int(str_line,tmp_int)) stop 'ERROR: eloss_flag in setup file!'
-	if (tmp_int.eq.1) eloss_flag = .true.
+	if (.not.rd_int(str_line,tmp_int)) stop 'ERROR: elossi_flag in setup file!'
+	if (tmp_int.eq.1) elossi_flag = .true.
+! Read in flag for ionization energy loss reconstruction
+	read (chanin,1001) str_line
+	write(6,*) str_line(1:last_char(str_line))
+	if (.not.rd_int(str_line,tmp_int)) stop 'ERROR: elossf_flag in setup file!'
+	if (tmp_int.eq.1) elossf_flag = .true.
 
 ! Read in flag for wire chamber smearing.
 	read (chanin,1001) str_line
@@ -464,8 +469,11 @@ C Print out which arm we will be using
 	endif
 
 C Print out energy loss setting
-	if(eloss_flag) then
-	   write(6,*) 'Will be including Ionization Energy Losses!'
+	if(elossi_flag) then
+	   write(6,*) 'Will be including Ionization Energy Losses for generated particles!'
+	endif
+	if(elossf_flag) then
+	   write(6,*) 'Will be including Ionization Energy Losses reconstruction!'
 	endif
 	
 	write(6,*) ''
@@ -639,7 +647,7 @@ c ... entrance/exit thickness 0.11 mm Al
 	  musc_targ_len = musc_targ_len + s_Al/X0_cm_Al + s_air/X0_cm_air + s_mylar/X0_cm_mylar
 
 !Energy Loss for generated particle
-	  if (eloss_flag) then
+	  if (elossi_flag) then
 	     
 	     typeflag = 1
 
@@ -647,7 +655,6 @@ c ... entrance/exit thickness 0.11 mm Al
 	     call enerloss_new(s_Al,rho_Al,Z_Al,A_Al,energyi,mass,typeflag,Eloss_Al)
 	     call enerloss_new(s_air,rho_air,Z_air,A_air,energyi,mass,typeflag,Eloss_air)
 	     call enerloss_new(s_mylar,rho_mylar,Z_mylar,A_mylar,energyi,mass,typeflag,Eloss_mylar)
-	     
 	     Elossi = Eloss_target + Eloss_Al + Eloss_air + Eloss_mylar
 	     
 	  else
@@ -729,7 +736,7 @@ C Transport through spectrometer
 	    sin_rec = sin(theta_rec)
 	    
 	    !Calculate Reconstructed (Most-Probable) Energy Loss
-	    if (eloss_flag) then
+	    if (elossf_flag) then
 
 	       !First calc path-lengths using reconstructed quantities
 	       !Distances in materials after target
