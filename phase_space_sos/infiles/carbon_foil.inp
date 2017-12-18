@@ -14,8 +14,8 @@
      0.0	Horiz beam spot size in cm (Full width of +/- 1 sigma)
      0.0	Vert  beam spot size in cm (Full width of +/- 1 sigma)
      0.015      Thickness of target (Full width, cm)
-     0.0        Raster half-width x (cm)
-     0.0        Raster half-width y (cm)
+     0.0        Raster full-width x (cm)
+     0.0        Raster full-width y (cm)
      50.0	DP/P  reconstruction cut (half width in % )
      100.0	Theta reconstruction cut (half width in mr)
      100.0	Phi   reconstruction cut (half width in mr)
@@ -34,7 +34,8 @@
      0.0        Spectrometer yp offset (mr)
      0		particle identification :e=0, p=1, d=2, pi=3, ka=4
      1		flag for multiple scattering
-     1		flag for ionization energy loss
+     1		flag for ionization energy loss for generated particles
+     1		flag for ionization energy loss reconstruction(most probable)
      1		flag for wire chamber smearing
      0          flag for dumping all events into NTUPLE
      0          collimator option: 0=Wide Open, 1=Collimator, 2=Sieve, 3=Ext Sieve, 4=GMP Sieve

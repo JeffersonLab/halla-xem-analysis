@@ -3,7 +3,7 @@
 ! C12 target
 !------------------------------------------------------------------------------
      1000000	Monte-Carlo trials
-     1000.0	Spectrometer momentum (in MeV/c)
+     2000.0	Spectrometer momentum (in MeV/c)
      48.75	Spectrometer angle (in degrees)
     -7.0	M.C. DP/P  down limit 
      7.0	M.C. DP/P  up   limit 
@@ -20,10 +20,10 @@
      100.0	Theta reconstruction cut (half width in mr)
      100.0	Phi   reconstruction cut (half width in mr)
      50.0	ZTGT  reconstruction cut (Half width in cm)
-     19.32	one radiation length of target material (in cm)
-     2.21	target density in g/cm^3
-     6		target atomic number Z
-     12.01	target standard atomic weight A   
+     63.05	one radiation length of target material (in cm)
+     0.0723	target density in g/cm^3
+     1		target atomic number Z
+     1	        target standard atomic weight A   
      0.0        Beam x offset (cm)  +x = beam left
      0.0	Beam y offset (cm)  +y = up
      0.0        Target z offset (cm)+z = downstream (0.25)
