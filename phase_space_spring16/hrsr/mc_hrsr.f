@@ -390,8 +390,9 @@ C Read in transport coefficients.
 	zdrift = driftdist(spectr,1) - ztmp
 	call project(xs,ys,zdrift,decay_flag,dflag,m2,p,pathlen) !project and decay
 
-c Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
-	if ((xs*xs + ys*ys).gt.r_Q1*r_Q1) then
+c Pipe going through Q1 is a little smaller than r_Q1 (12.395cm compared to 12.8cm),
+c so use pipe radius for Q1 aperture checks at entrance, 2/3 and exit 
+	if (sqrt(xs*xs+ys*ys).gt.12.395) then
 	  rSTOP_Q1_in = rSTOP_Q1_in + 1
 	  stop_where=5.	
 	  x_stop=xs
@@ -402,7 +403,7 @@ c Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
 ! Check aperture at 2/3 of Q1 (SOS Quad).
 
 	call transp(spectr,2,decay_flag,dflag,m2,p,46.66666667e0,pathlen)
-	if ((xs*xs + ys*ys).gt.r_Q1*r_Q1) then
+	if (sqrt(xs*xs+ys*ys).gt.12.395) then
 	  rSTOP_Q1_mid = rSTOP_Q1_mid + 1
 	  stop_where=6.
 	  x_stop=xs
@@ -413,7 +414,7 @@ c Pipe going through Q1 is a little smaller than r_Q1, but use r_Q1 for now
 ! Go to Q1 (SOS Quad) OUT mag boundary.
 
 	call transp(spectr,3,decay_flag,dflag,m2,p,23.33333333e0,pathlen)
-	if ((xs*xs + ys*ys).gt.r_Q1*r_Q1) then
+	if (sqrt(xs*xs+ys*ys).gt.12.395) then
 	  rSTOP_Q1_out = rSTOP_Q1_out + 1
 	  stop_where=7.
 	  x_stop=xs
