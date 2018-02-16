@@ -33,7 +33,7 @@
      0.0        Spectrometer xp offset (mr)
      0.0        Spectrometer yp offset (mr)
      0		particle identification :e=0, p=1, d=2, pi=3, ka=4
-     1		flag for multiple scattering
+     1          flag for multiple scattering
      0		flag for ionization energy loss for generated particles
      0		flag for ionization energy loss reconstruction(most probable)
      1		flag for wire chamber smearing

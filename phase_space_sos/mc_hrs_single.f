@@ -90,7 +90,7 @@ c	integer*4 hit_calo                      !flag for hitting the calorimeter
 
 C Initial and reconstructed track quantities.
 	real*8 dpp_init,dth_init,dph_init,xtar_init,ytar_init,ztar_init
-	real*8 dpp_recon,dth_recon,dph_recon,ytar_recon,ztar_recon
+	real*8 dpp_recon,dth_recon,dph_recon,ytar_recon,xtar_recon,ztar_recon
 	real*8 x_fp,y_fp,dx_fp,dy_fp		!at focal plane
 	real*8 frx,fry,fr1,fr2
 	real*8 p_spec,th_spec			!spectrometer setting
@@ -524,7 +524,7 @@ c	  frx = -fr1  !+x = right, but frx is left
 	  z = z + zoff
 
 C Pick scattering angles and DPP from independent, uniform distributions.
-C dxdz and dydz in HMS TRANSPORT coordinates.
+C dxdz and dydz in HRS TRANSPORT coordinates.
 
 C April-23, 2016 (E. Cohen): Read generated events from a file
           if(gen_evts_file_flag) then
@@ -579,6 +579,21 @@ C Drift back to zs = 0, the plane through the target center
 	  ys = ys - zs * dydzs
 	  zs = 0.0
 
+c We need xtar_init and ytar_init to be set at z=0
+          xtar_init = xs
+          ytar_init = ys
+
+c We need an xtar_recon for the COSY reconstruction map. One approach
+c is as follows: we can first call the reconstruction map with xtar_recon = 0;
+c then use these results to determine xtar_recon; then call the map again with
+c the determined xtar_recon value. (This is sort-of what is done in data, except
+c that the second iteration is just a first-order correction.) There are, however,
+c some technical challenges with implementing this procedure. So, for now I just
+c set xtar_recon equal to xtar_init, and hopefully someone can implement things more
+c correctly in the future. (Barak Schmookler, 2/15/18)
+          xtar_recon = xtar_init !FIX ME
+
+c Calculate full scattering angle
 	  if(use_left_arm) then
 	     cos_ev = (cos_ts-dydzs*sin_ts)/sqrt(1+dydzs**2+dxdzs**2)
 	  else
@@ -588,7 +603,7 @@ C Drift back to zs = 0, the plane through the target center
 	  th_ev = acos(cos_ev)
 	  sin_ev = sin(th_ev)
 
-C Calculate Momentum and Energy at vertex for this event ( in MeV(/c) )
+C Calculate Momentum and Energy at vertex for this event ( in MeV/c )
 	  momentumi = p_spec*(1.+ dpp_init/100.)
 	  energyi = sqrt(momentumi**2 + m2)
 	  
@@ -669,17 +684,17 @@ C Calculate values going through spectrometer
 	  dpps = 100.*( (momentums-p_spec)/p_spec )
 
 C Transport through spectrometer
-	  if(use_left_arm) then	    
+	  if(use_left_arm) then     
 	     call mc_hrsl(p_spec, th_spec, dpps, xs, ys, zs, dxdzs, dydzs,
-     >		x_fp, dx_fp, y_fp, dy_fp, m2,
-     >		ms_flag, wcs_flag, decay_flag, resmult, fry, ok_spec, pathlen,
-     >          col_flag)
-	  else	     
+     >          x_fp, dx_fp, y_fp, dy_fp, m2,
+     >          ms_flag, wcs_flag, decay_flag, resmult, xtar_recon,
+     >          ok_spec, pathlen, col_flag)
+          else       
 	     call mc_hrsr(p_spec, th_spec, dpps, xs, ys, zs, dxdzs, dydzs,
-     >		x_fp, dx_fp, y_fp, dy_fp, m2,
-     >		ms_flag, wcs_flag, decay_flag, resmult, fry, ok_spec, pathlen,
-     >          col_flag)
-	  endif
+     >          x_fp, dx_fp, y_fp, dy_fp, m2,
+     >          ms_flag, wcs_flag, decay_flag, resmult, xtar_recon,
+     >          ok_spec, pathlen,col_flag)
+          endif
 
 ! Option for dumping all events is implemented
 	  if (ok_spec .or. dump_all_in_ntuple) then !Success, increment arrays
